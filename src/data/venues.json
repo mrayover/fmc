@@ -1,4 +1,17 @@
 [
-  { "id": "strummers", "name": "Strummer’s", "link": "https://www.instagram.com/strummersfresno/" },
-  { "id": "fulton55", "name": "Fulton 55", "link": "https://www.instagram.com/fulton55/" }
+  {
+    "id": "goldsteins",
+    "name": "Goldstein's Mortuary & Delicatessen",
+    "link": "https://www.instagram.com/goldsteinsbeer/"
+  },
+  {
+    "id": "strummers",
+    "name": "Strummer’s",
+    "link": "https://www.instagram.com/strummersfresno/"
+  },
+  {
+    "id": "fulton55",
+    "name": "Fulton 55",
+    "link": "https://www.instagram.com/fulton55/"
+  }
 ]

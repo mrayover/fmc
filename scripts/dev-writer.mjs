@@ -132,8 +132,8 @@ const server = http.createServer(async (req, res) => {
     return send(res, 200, { ok: true, data: next })
   }
 
-  // Add Venue
-  if (req.method === "POST" && req.url === "/api/venues") {
+    // Add Venue
+  if (req.method === "POST" && (req.url === "/api/venues" || req.url === "/api/venues/add")) {
     const body = await readBodyJson(req)
     if (!body) return bad(res, "Invalid JSON")
 
@@ -154,7 +154,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Add Partner
-  if (req.method === "POST" && req.url === "/api/partners") {
+  if (req.method === "POST" && (req.url === "/api/partners" || req.url === "/api/partners/add")) {
     const body = await readBodyJson(req)
     if (!body) return bad(res, "Invalid JSON")
 
@@ -173,9 +173,8 @@ const server = http.createServer(async (req, res) => {
     await writeJsonArray(PARTNERS_PATH, next)
     return send(res, 200, { ok: true, data: next })
   }
+  })
 
-  send(res, 404, { ok: false, error: "Not found" })
-})
 
 server.listen(PORT, () => {
   console.log(`Dev writer running on http://localhost:${PORT}`)

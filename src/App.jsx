@@ -433,7 +433,7 @@ function DevToolsView() {
     }
   }
 
-  async function addVenue() {
+    async function addVenue() {
     try {
       setStatus("Saving venue…")
 
@@ -443,7 +443,7 @@ function DevToolsView() {
         link: venueDraft.link.trim(),
       }
 
-      const res = await fetch(`${API}/api/venues`, {
+      const res = await fetch(`${API}/api/venues/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -451,10 +451,8 @@ function DevToolsView() {
       const out = await res.json()
       if (!out.ok) throw new Error(out.error || "Failed to save venue")
 
-      setVenuesJson(JSON.stringify(out.data, null, 2))
-      setStatus("Venue saved to src/data/venues.json. Refresh Venues if needed.")
-
       setVenueDraft({ id: "", name: "", link: "" })
+      await fetchAll()
     } catch (err) {
       setStatus(`Error: ${err?.message || String(err)}`)
     }
@@ -470,7 +468,7 @@ function DevToolsView() {
         link: partnerDraft.link.trim(),
       }
 
-      const res = await fetch(`${API}/api/partners`, {
+      const res = await fetch(`${API}/api/partners/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -478,14 +476,13 @@ function DevToolsView() {
       const out = await res.json()
       if (!out.ok) throw new Error(out.error || "Failed to save partner")
 
-      setPartnersJson(JSON.stringify(out.data, null, 2))
-      setStatus("Partner saved to src/data/partners.json. Refresh Partners if needed.")
-
       setPartnerDraft({ id: "", name: "", link: "" })
+      await fetchAll()
     } catch (err) {
       setStatus(`Error: ${err?.message || String(err)}`)
     }
   }
+
 
   return (
     <div className="space-y-4">
