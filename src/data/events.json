@@ -1,0 +1,40 @@
+[
+  {
+    "title": "My Test Event",
+    "date": "2026-01-18",
+    "time": "7:00 PM",
+    "venueId": "strummers",
+    "partnerIds": [],
+    "flyer": "/flyers/Arcana_VI.png",
+    "link": "https://www.instagram.com/jazztuezdayz/"
+  },
+  {
+    "title": "Example Show 1",
+    "date": "2026-01-20",
+    "time": "7:00 PM",
+    "venueId": "strummers",
+    "partnerIds": [
+      "jazz-tuesdayz"
+    ],
+    "flyer": null,
+    "link": "https://www.instagram.com/strummersfresno/"
+  },
+  {
+    "title": "Example Show 2",
+    "date": "2026-01-20",
+    "time": "9:00 PM",
+    "venueId": "fulton55",
+    "partnerIds": [],
+    "flyer": null,
+    "link": "https://www.instagram.com/fulton55/"
+  },
+  {
+    "title": "Example Show 3",
+    "date": "2026-01-22",
+    "time": "8:00 PM",
+    "venueId": "strummers",
+    "partnerIds": [],
+    "flyer": null,
+    "link": null
+  }
+]
