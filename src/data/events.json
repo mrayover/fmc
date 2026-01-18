@@ -36,5 +36,48 @@
     "partnerIds": [],
     "flyer": null,
     "link": null
+  },
+  {
+    "title": "Testing Genres Multiple selections",
+    "date": "2026-01-26",
+    "time": "10:00 PM",
+    "venueId": "fulton55",
+    "partnerIds": [
+      "Jazz Tuezdayz",
+      "Valley Voices"
+    ],
+    "genres": [
+      "Latin",
+      "Jazz",
+      "Blues"
+    ],
+    "flyer": "/flyers/Arcana_VI.png",
+    "link": "https://www.visitfresnocounty.org/events/calendar-of-events/"
+  },
+  {
+    "title": "Genre Testing 1 Genre",
+    "date": "2026-01-26",
+    "time": "8:00 PM",
+    "venueId": "strummers",
+    "partnerIds": [
+      "Valley Voices"
+    ],
+    "genres": [
+      "Alternative"
+    ],
+    "flyer": "/flyers/Arcana_VI.png",
+    "link": "https://www.cartridgepeople.com/info/blog/printer-testing-print-test-page/"
+  },
+  {
+    "title": "Testing Genres - No Genre",
+    "date": "2026-01-26",
+    "time": "9:00 PM",
+    "venueId": "goldsteins",
+    "partnerIds": [
+      "Jazz Tuezdayz"
+    ],
+    "genres": [],
+    "flyer": "/flyers/Arcana_VI.png",
+    "link": "https://icolorpalette.com/color/dark-sage"
   }
 ]

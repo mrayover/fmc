@@ -11,6 +11,26 @@ const NAV_ITEMS = [
   { key: "about", label: "About" },
   // Dev Tools is conditionally added below
 ]
+const GENRES = [
+  "Alternative",
+  "Blues",
+  "Bluegrass",
+  "Classical",
+  "Country",
+  "Electronic",
+  "Funk",
+  "Hip Hop",
+  "Indie",
+  "Jazz",
+  "Latin",
+  "Metal",
+  "Pop",
+  "Punk",
+  "Reggae",
+  "Rock",
+  "R & B"
+]
+
 function formatDateLabel(yyyyMmDd) {
   // Keep it boring: local date label, no external libs.
   const [y, m, d] = yyyyMmDd.split("-").map(Number)
@@ -356,6 +376,7 @@ function DevToolsView() {
     time: "",
     venueId: "",
     partnerIds: "",
+    genres: [],
     flyer: "",
     link: "",
   })
@@ -369,6 +390,14 @@ function DevToolsView() {
       .map((s) => s.trim())
       .filter(Boolean)
   }
+
+  function parseGenres(input) {
+    return String(input || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+  }
+
 
   async function fetchAll() {
     try {
@@ -404,6 +433,7 @@ function DevToolsView() {
         time: eventDraft.time.trim(),
         venueId: eventDraft.venueId.trim(),
         partnerIds: parsePartnerIds(eventDraft.partnerIds),
+        genres: Array.isArray(eventDraft.genres) ? eventDraft.genres : [],
         flyer: eventDraft.flyer.trim() || null,
         link: eventDraft.link.trim() || null,
       }
@@ -425,6 +455,7 @@ function DevToolsView() {
         time: "",
         venueId: "",
         partnerIds: "",
+        genres: [],
         flyer: "",
         link: "",
       })
@@ -557,13 +588,42 @@ function DevToolsView() {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Partners (optional)</label>
+<label className="text-sm font-medium">Partners (optional)</label>
             <input
               className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
               value={eventDraft.partnerIds}
               onChange={(e) => setEventDraft((d) => ({ ...d, partnerIds: e.target.value }))}
               placeholder="comma-separated partner ids"
             />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Genres (optional)</label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {GENRES.map((g) => {
+                const checked = Array.isArray(eventDraft.genres) && eventDraft.genres.includes(g)
+                return (
+                  <label
+                    key={g}
+                    className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => {
+                        const on = e.target.checked
+                        setEventDraft((d) => {
+                          const curr = Array.isArray(d.genres) ? d.genres : []
+                          const next = on ? [...curr, g] : curr.filter((x) => x !== g)
+                          return { ...d, genres: next }
+                        })
+                      }}
+                    />
+                    <span className="truncate">{g}</span>
+                  </label>
+                )
+              })}
+            </div>
           </div>
 
           <div>

@@ -69,6 +69,14 @@ function normalizePartnerIds(x) {
   if (!Array.isArray(x)) return []
   return x.map((v) => normalizeString(v)).filter(Boolean)
 }
+function normalizeGenres(x) {
+  if (Array.isArray(x)) return x.map((v) => normalizeString(v)).filter(Boolean)
+  // allow comma-separated string as a convenience (optional)
+  return normalizeString(x)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
 
 function sortEvents(events) {
   // Sort by date asc, then time string asc as best-effort.
@@ -120,10 +128,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     const partnerIds = normalizePartnerIds(body.partnerIds)
+    const genres = normalizeGenres(body.genres)
     const flyer = normalizeOptionalString(body.flyer)
     const link = normalizeOptionalString(body.link)
 
-    const nextEvent = { title, date, time, venueId, partnerIds, flyer, link }
+    const nextEvent = { title, date, time, venueId, partnerIds, genres, flyer, link }
+
 
     const existing = await readJsonArray(EVENTS_PATH)
     const next = sortEvents([nextEvent, ...existing])
