@@ -1,11 +1,15 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+safelist: [
+  "grid-cols-[1fr_minmax(0,36rem)_1fr]",
+  "md:grid-cols-[1fr_minmax(0,36rem)_1fr]",
+  "grid-cols-[0px_minmax(0,1fr)_0px]",
+  "bg-[#B87333]",
+],
   theme: {
     extend: {
       fontFamily: {
-        // Matches MarcusOveracker.com behavior:
-        // - Segoe-first on Windows, SF/Helvetica on macOS, generic system fallbacks elsewhere.
         ui: [
           "Segoe UI",
           "system-ui",
@@ -19,7 +23,6 @@ export default {
           "Segoe UI Symbol",
           "Noto Color Emoji",
         ],
-        // Title uses same stack; we drive "Light" by weight (font-light / font-extralight)
         title: [
           "Segoe UI",
           "system-ui",
@@ -37,4 +40,4 @@ export default {
     },
   },
   plugins: [],
-};
+}

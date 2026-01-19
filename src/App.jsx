@@ -273,134 +273,133 @@ function Shell({
           '"Segoe UI Light","Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif',
       }}
     >
-      {/* Global frame: inert | active | inert */}
-        <div className="min-h-screen w-screen md:bg-[#B87333]">
-
+            {/* Global frame: inert | active | inert */}
+      <div className="min-h-screen w-full grid grid-cols-[1fr_minmax(0,36rem)_1fr] overflow-x-hidden">
 
 
         {/* Inert field (left) */}
-        <div
-          aria-hidden="true"
-          className="hidden md:block md:col-start-1 md:col-end-2"
-          style={{ background: "#B87333" }}
-        />
-
+<div
+  aria-hidden="true"
+  className="min-h-screen bg-[#B87333]"
+/>
         {/* Active content column */}
-        <div className="min-h-screen bg-white w-full md:mx-auto md:max-w-xl">
+        <div className="min-h-screen bg-white w-full col-start-2">
           <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-            <div className="mx-auto max-w-xl px-4 py-4">
-              <div className="flex items-baseline justify-between gap-3">
-                <h1 className="text-xl font-semibold tracking-tight">
+            {/* Row 1: Title */}
+            <div className="w-full px-4 py-4">
+              <div className="flex justify-center">
+                <h1 className="text-xl font-semibold tracking-tight text-center">
                   FRESNO MUSIC CALENDAR
                 </h1>
-
               </div>
+            </div>
 
-<nav className="mt-3 flex flex-wrap items-center gap-2">
-
-  {navItems.map((item) => (
-    <NavButton
-      key={item.key}
-      active={activeTab === item.key}
-      onClick={() => {
-        if (item.key === "home") setJumpDate("") // Home click = reset to today anchor
-        setActiveTab(item.key)
-      }}
-    >
-      {item.label}
-    </NavButton>
-  ))}
-
-  {/* Inline: Genre dropdown (Home only) */}
-  {activeTab === "home" ? (
-    <div className="relative">
-      <button
-        type="button"
-        className="rounded-full px-3 py-1.5 text-sm border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
-        onClick={() => setIsGenreOpen((v) => !v)}
-      >
-        Genre Filter{" "}
-        <span className="text-xs text-neutral-500">
-          ({selectedGenres?.size || 0}/{GENRES.length})
-        </span>
-      </button>
-
-      {isGenreOpen ? (
-        <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">Genres</div>
-<button
-  type="button"
-  className="text-xs underline text-neutral-600"
-  onClick={toggleAllGenres}
->
-  All
-</button>
-
-          </div>
-
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {GENRES.map((g) => {
-              const checked = selectedGenres?.has(g)
-              return (
-                <label
-                  key={g}
-                  className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm"
-                >
-                  <input
-                    type="checkbox"
-                    checked={!!checked}
-                    onChange={(e) => {
-                      const on = e.target.checked
-                      setSelectedGenres((prev) => {
-                        const next = new Set(prev || [])
-                        if (on) next.add(g)
-                        else next.delete(g)
-                        return next
-                      })
+            {/* Row 2: Navigation (and genre filter UI if Home) */}
+            <div className="w-full px-4 pb-3">
+              <nav className="flex flex-wrap items-center gap-2">
+                {navItems.map((item) => (
+                  <NavButton
+                    key={item.key}
+                    active={activeTab === item.key}
+                    onClick={() => {
+                      if (item.key === "home") setJumpDate("")
+                      setActiveTab(item.key)
                     }}
-                  />
-                  <span className="truncate">{g}</span>
-                </label>
-              )
-            })}
-          </div>
+                  >
+                    {item.label}
+                  </NavButton>
+                ))}
 
-          <div className="mt-3 flex justify-end">
-            <button
-              type="button"
-              className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-              onClick={() => setIsGenreOpen(false)}
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  ) : null}
-  {/* Inline: Search (Home only) */}
-  {activeTab === "home" ? (
-    <input
-      type="text"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      placeholder="Search titles"
-      className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm"
-    />
-  ) : null}
+                {activeTab === "home" ? (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="rounded-full px-3 py-1.5 text-sm border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
+                      onClick={() => setIsGenreOpen((v) => !v)}
+                    >
+                      Genre Filter{" "}
+                      <span className="text-xs text-neutral-500">
+                        ({selectedGenres?.size || 0}/{GENRES.length})
+                      </span>
+                    </button>
 
-</nav>
+                    {isGenreOpen ? (
+                      <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium">Genres</div>
+                          <button
+                            type="button"
+                            className="text-xs underline text-neutral-600"
+                            onClick={toggleAllGenres}
+                          >
+                            All
+                          </button>
+                        </div>
 
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          {GENRES.map((g) => {
+                            const checked = selectedGenres?.has(g)
+                            return (
+                              <label
+                                key={g}
+                                className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={!!checked}
+                                  onChange={(e) => {
+                                    const on = e.target.checked
+                                    setSelectedGenres((prev) => {
+                                      const next = new Set(prev || [])
+                                      if (on) next.add(g)
+                                      else next.delete(g)
+                                      return next
+                                    })
+                                  }}
+                                />
+                                <span className="truncate">{g}</span>
+                              </label>
+                            )
+                          })}
+                        </div>
+
+                        <div className="mt-3 flex justify-end">
+                          <button
+                            type="button"
+                            className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                            onClick={() => setIsGenreOpen(false)}
+                          >
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </nav>
+            </div>
+
+            {/* Row 3: Search only */}
+            <div className="w-full px-4 pb-4">
+              {activeTab === "home" ? (
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search titles"
+                  className="w-full rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm"
+                />
+              ) : null}
             </div>
           </header>
 
+
           <main>
-            <div className="mx-auto max-w-xl px-4 py-6">{children}</div>
+            <div className="w-full px-4 py-6">{children}</div>
           </main>
 
-          <footer className="border-t border-neutral-200">
-            <div className="mx-auto max-w-xl px-4 py-5 text-sm text-neutral-600">
+        <footer className="border-t border-neutral-200">
+          <div className="w-full px-4 py-5 text-sm text-neutral-600">
               <p>
                 Send show info or a flyer:{" "}
                 <a className="underline" href="mailto:fresnomusiccalendar@gmail.com">
@@ -412,13 +411,12 @@ function Shell({
         </div>
 
         {/* Inert field (right) */}
-        <div
-          aria-hidden="true"
-          className="hidden md:block md:col-start-3 md:col-end-4"
-          style={{ background: "#B87333" }}
-        />
+<div
+  aria-hidden="true"
+  className="min-h-screen bg-[#B87333]"
+/>
       </div>
-    </div>
+</div>
   )
 }
 function HomeView({ filter, anchorDate, selectedGenres, searchQuery }) {
@@ -478,13 +476,16 @@ const grouped = useMemo(
 
   const filterLabel = useMemo(() => {
     if (!filter?.type || !filter?.id) return null
-    if (filter.type === "venue") return getVenueById(filter.id)?.name || "Venue"
-        if (filter.type === "partner") {
+    if (filter.type === "venue") {
+      return getVenueById(filter.id)?.name || "Venue"
+    }
+    if (filter.type === "partner") {
       const want = slugifyId(filter.id)
       return partners.find((p) => slugifyId(p.id) === want)?.name || "Partner"
     }
     return null
   }, [filter])
+
 
   return (
     <div className="space-y-4">
@@ -1332,7 +1333,7 @@ const setActiveTabWrapped = (key) => {
 
 
   return (
-<Shell
+    <Shell
       activeTab={activeTab}
       setActiveTab={setActiveTabWrapped}
       jumpDate={jumpDate}
@@ -1344,6 +1345,7 @@ const setActiveTabWrapped = (key) => {
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
     >
+
 
       {activeTab === "home" && (
         <div className="space-y-3">
