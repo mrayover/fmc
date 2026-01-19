@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { key: "venues", label: "Venues" },
   { key: "partners", label: "Partners" },
   { key: "about", label: "About" },
+  { key: "contact", label: "Contact" },
   // Dev Tools is conditionally added below
 ]
 const GENRES = [
@@ -233,12 +234,33 @@ function NavButton({ active, children, onClick }) {
   )
 }
 
-function Shell({ activeTab, setActiveTab, jumpDate, setJumpDate, children }) {
+function Shell({
+  activeTab,
+  setActiveTab,
+  jumpDate,
+  setJumpDate,
+  selectedGenres,
+  setSelectedGenres,
+  resetGenresToAll,
+  clearGenres,
+  children,
+}) {
+
   const navItems = useMemo(() => {
     const items = [...NAV_ITEMS]
     if (import.meta.env.DEV) items.push({ key: "dev", label: "Dev Tools" })
     return items
   }, [])
+
+  const [isGenreOpen, setIsGenreOpen] = useState(false)
+
+  function toggleAllGenres() {
+    const count = selectedGenres?.size || 0
+    const isAllSelected = count === GENRES.length
+    if (isAllSelected) clearGenres()
+    else resetGenresToAll()
+  }
+
 
   return (
     <div className="min-h-screen bg-white text-neutral-900">
@@ -253,34 +275,93 @@ function Shell({ activeTab, setActiveTab, jumpDate, setJumpDate, children }) {
             </div>
           </div>
 
-          <nav className="mt-3 flex flex-wrap gap-2">
-            {navItems.map((item) => (
-<NavButton
-  key={item.key}
-  active={activeTab === item.key}
-  onClick={() => {
-    if (item.key === "home") setJumpDate("") // Home click = reset to today anchor
-    setActiveTab(item.key)
-  }}
->
-  {item.label}
-</NavButton>
+<nav className="mt-3 flex flex-wrap items-center gap-2">
+  {navItems.map((item) => (
+    <NavButton
+      key={item.key}
+      active={activeTab === item.key}
+      onClick={() => {
+        if (item.key === "home") setJumpDate("") // Home click = reset to today anchor
+        setActiveTab(item.key)
+      }}
+    >
+      {item.label}
+    </NavButton>
+  ))}
 
-            ))}
-          </nav>
-                    <div className="mt-3 flex items-center justify-between gap-3">
-            <div className="text-xs text-neutral-500">Jump to date</div>
-            <input
-              type="date"
-              className="rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              value={jumpDate}
-              onChange={(e) => {
-                const val = e.target.value
-                setJumpDate(val)
-                setActiveTab("home")
-              }}
-            />
+  {/* Inline: Genre dropdown (Home only) */}
+  {activeTab === "home" ? (
+    <div className="relative">
+      <button
+        type="button"
+        className="rounded-full px-3 py-1.5 text-sm border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
+        onClick={() => setIsGenreOpen((v) => !v)}
+      >
+        Genre Filter{" "}
+        <span className="text-xs text-neutral-500">
+          ({selectedGenres?.size || 0}/{GENRES.length})
+        </span>
+      </button>
+
+      {isGenreOpen ? (
+        <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium">Genres</div>
+<button
+  type="button"
+  className="text-xs underline text-neutral-600"
+  onClick={toggleAllGenres}
+>
+  All
+</button>
+
           </div>
+
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {GENRES.map((g) => {
+              const checked = selectedGenres?.has(g)
+              return (
+                <label
+                  key={g}
+                  className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={!!checked}
+                    onChange={(e) => {
+                      const on = e.target.checked
+                      setSelectedGenres((prev) => {
+                        const next = new Set(prev || [])
+                        if (on) next.add(g)
+                        else next.delete(g)
+                        return next
+                      })
+                    }}
+                  />
+                  <span className="truncate">{g}</span>
+                </label>
+              )
+            })}
+          </div>
+
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+              onClick={() => setIsGenreOpen(false)}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  ) : null}
+
+
+</nav>
+
+
 
         </div>
       </header>
@@ -293,9 +374,9 @@ function Shell({ activeTab, setActiveTab, jumpDate, setJumpDate, children }) {
         <div className="mx-auto max-w-xl px-4 py-5 text-sm text-neutral-600">
           <p>
             Send show info or a flyer:{" "}
-            <a className="underline" href="mailto:YOUR_EMAIL_HERE">
-              YOUR_EMAIL_HERE
-            </a>
+<a className="underline" href="mailto:fresnomusiccalendar@gmail.com">
+  fresnomusiccalendar@gmail.com
+</a>
           </p>
         </div>
       </footer>
@@ -303,7 +384,7 @@ function Shell({ activeTab, setActiveTab, jumpDate, setJumpDate, children }) {
   )
 }
 
-function HomeView({ filter, anchorDate }) {
+function HomeView({ filter, anchorDate, selectedGenres }) {
   const filteredEvents = useMemo(() => {
     let list = events
 
@@ -319,9 +400,18 @@ function HomeView({ filter, anchorDate }) {
       })
     }
 
+    // Genre filter (additive). If none selected, show nothing.
+    if (selectedGenres instanceof Set) {
+      if (selectedGenres.size === 0) return []
+      list = list.filter((e) => {
+        const gs = Array.isArray(e.genres) ? e.genres : []
+        return gs.some((g) => selectedGenres.has(g))
+      })
+    }
 
     return list
-  }, [filter])
+
+  }, [filter, selectedGenres])
 
 const grouped = useMemo(
   () => groupEventsByDate(filteredEvents),
@@ -486,7 +576,26 @@ function AboutView() {
     </div>
   )
 }
-
+function ContactView() {
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg font-semibold">Contact</h2>
+      <div className="space-y-2 text-sm text-neutral-700 leading-relaxed">
+        <p>
+          For corrections, venue updates, partnerships, or anything else:
+        </p>
+        <p>
+          <a
+            className="underline"
+            href="mailto:fresnomusiccalendar@gmail.com"
+          >
+            fresnomusiccalendar@gmail.com
+          </a>
+        </p>
+      </div>
+    </div>
+  )
+}
 function DevToolsView() {
   const API = "http://localhost:8787"
 
@@ -1143,6 +1252,15 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("home")
   const [filter, setFilter] = useState(null)
   const [jumpDate, setJumpDate] = useState("")
+  const [selectedGenres, setSelectedGenres] = useState(() => new Set(GENRES))
+
+  function resetGenresToAll() {
+    setSelectedGenres(new Set(GENRES))
+  }
+
+  function clearGenres() {
+    setSelectedGenres(new Set())
+  }
 
 
   function goHomeWithFilter(nextFilter) {
@@ -1168,7 +1286,12 @@ const setActiveTabWrapped = (key) => {
       setActiveTab={setActiveTabWrapped}
       jumpDate={jumpDate}
       setJumpDate={setJumpDate}
+      selectedGenres={selectedGenres}
+      setSelectedGenres={setSelectedGenres}
+      resetGenresToAll={resetGenresToAll}
+      clearGenres={clearGenres}
     >
+
 
       {activeTab === "home" && (
         <div className="space-y-3">
@@ -1182,7 +1305,12 @@ const setActiveTabWrapped = (key) => {
             </button>
           ) : null}
 
-                    <HomeView filter={filter} anchorDate={jumpDate} />
+                    <HomeView
+  filter={filter}
+  anchorDate={jumpDate}
+  selectedGenres={selectedGenres}
+/>
+
 
         </div>
       )}
@@ -1200,6 +1328,7 @@ const setActiveTabWrapped = (key) => {
       )}
 
       {activeTab === "about" && <AboutView />}
+      {activeTab === "contact" && <ContactView />}
       {activeTab === "dev" && import.meta.env.DEV && <DevToolsView />}
     </Shell>
   )
