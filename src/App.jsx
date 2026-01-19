@@ -5,13 +5,15 @@ import venues from "./data/venues.json"
 import partners from "./data/partners.json"
 
 const NAV_ITEMS = [
-  { key: "home", label: "Home" },
+  { key: "home", label: "Today" },
   { key: "venues", label: "Venues" },
   { key: "partners", label: "Partners" },
+  // Genres is handled separately (button opens the genre UI)
   { key: "about", label: "About" },
   { key: "contact", label: "Contact" },
   // Dev Tools is conditionally added below
 ]
+
 const GENRES = [
   "Alternative",
   "Blues",
@@ -224,16 +226,19 @@ function NavButton({ active, children, onClick }) {
     <button
       type="button"
       onClick={onClick}
+      aria-current={active ? "page" : undefined}
       className={[
-        "rounded-full px-3 py-1.5 text-sm",
-        "border border-neutral-200",
-        active ? "bg-neutral-900 text-white" : "bg-white text-neutral-900",
+        "text-sm leading-none",
+        "px-1 py-1",
+        "transition-colors",
+        active ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-800",
       ].join(" ")}
     >
       {children}
     </button>
   )
 }
+
 
 function Shell({
   activeTab,
@@ -256,6 +261,7 @@ function Shell({
   }, [])
 
   const [isGenreOpen, setIsGenreOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   function toggleAllGenres() {
     const count = selectedGenres?.size || 0
@@ -285,113 +291,241 @@ function Shell({
         {/* Active content column */}
         <div className="min-h-screen bg-white w-full col-start-2">
           <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-            {/* Row 1: Title */}
-            <div className="w-full px-4 py-4">
-              <div className="flex justify-center">
-                <h1 className="text-xl font-semibold tracking-tight text-center">
-                  FRESNO MUSIC CALENDAR
-                </h1>
-              </div>
-            </div>
+  {/* Row 1 (largest): title + submit line */}
+  <div className="h-16 px-4 flex flex-col items-center justify-center">
+    <h1 className="text-xl font-semibold tracking-tight text-center">
+      FRESNO MUSIC CALENDAR
+    </h1>
+    <a
+      className="mt-1 text-sm text-neutral-600 hover:text-neutral-900"
+      href="mailto:fresnomusiccalendar@gmail.com?subject=Event%20Submission"
+    >
+      Submit a Music Event Here
+    </a>
+  </div>
 
-            {/* Row 2: Navigation (and genre filter UI if Home) */}
-            <div className="w-full px-4 pb-3">
-              <nav className="flex flex-wrap items-center gap-2">
-                {navItems.map((item) => (
-                  <NavButton
-                    key={item.key}
-                    active={activeTab === item.key}
-                    onClick={() => {
-                      if (item.key === "home") setJumpDate("")
-                      setActiveTab(item.key)
-                    }}
+  {/* Row 2: Navigation */}
+  <div className="h-10 px-4 flex items-center border-t border-neutral-200">
+    {/* Desktop nav */}
+    <nav className="hidden md:flex w-full items-center justify-between">
+      <div className="flex items-center gap-6">
+        {navItems
+          .filter((i) => i.key !== "dev") // dev handled below
+          .map((item) => (
+            <NavButton
+              key={item.key}
+              active={activeTab === item.key}
+              onClick={() => {
+                if (item.key === "home") setJumpDate("")
+                setActiveTab(item.key)
+              }}
+            >
+              {item.label}
+            </NavButton>
+          ))}
+
+        {/* Dev Tools (desktop) */}
+        {import.meta.env.DEV ? (
+          <NavButton
+            active={activeTab === "dev"}
+            onClick={() => setActiveTab("dev")}
+          >
+            Dev Tools
+          </NavButton>
+        ) : null}
+
+        {/* Genres (desktop) */}
+        {activeTab === "home" ? (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsGenreOpen((v) => !v)}
+              className={[
+                "text-sm leading-none px-1 py-1 transition-colors",
+                isGenreOpen ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-800",
+              ].join(" ")}
+            >
+              Genres
+            </button>
+
+            {isGenreOpen ? (
+              <div className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Genres</div>
+                  <button
+                    type="button"
+                    className="text-xs underline text-neutral-600"
+                    onClick={toggleAllGenres}
                   >
-                    {item.label}
-                  </NavButton>
-                ))}
+                    All
+                  </button>
+                </div>
 
-                {activeTab === "home" ? (
-                  <div className="relative">
-                    <button
-                      type="button"
-                      className="rounded-full px-3 py-1.5 text-sm border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
-                      onClick={() => setIsGenreOpen((v) => !v)}
-                    >
-                      Genre Filter{" "}
-                      <span className="text-xs text-neutral-500">
-                        ({selectedGenres?.size || 0}/{GENRES.length})
-                      </span>
-                    </button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {GENRES.map((g) => {
+                    const checked = selectedGenres?.has(g)
+                    return (
+                      <label
+                        key={g}
+                        className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!checked}
+                          onChange={(e) => {
+                            const on = e.target.checked
+                            setSelectedGenres((prev) => {
+                              const next = new Set(prev || [])
+                              if (on) next.add(g)
+                              else next.delete(g)
+                              return next
+                            })
+                          }}
+                        />
+                        <span className="truncate">{g}</span>
+                      </label>
+                    )
+                  })}
+                </div>
 
-                    {isGenreOpen ? (
-                      <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm font-medium">Genres</div>
-                          <button
-                            type="button"
-                            className="text-xs underline text-neutral-600"
-                            onClick={toggleAllGenres}
-                          >
-                            All
-                          </button>
-                        </div>
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                    onClick={() => setIsGenreOpen(false)}
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
 
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          {GENRES.map((g) => {
-                            const checked = selectedGenres?.has(g)
-                            return (
-                              <label
-                                key={g}
-                                className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={!!checked}
-                                  onChange={(e) => {
-                                    const on = e.target.checked
-                                    setSelectedGenres((prev) => {
-                                      const next = new Set(prev || [])
-                                      if (on) next.add(g)
-                                      else next.delete(g)
-                                      return next
-                                    })
-                                  }}
-                                />
-                                <span className="truncate">{g}</span>
-                              </label>
-                            )
-                          })}
-                        </div>
+      {/* Date picker (desktop) */}
+      <input
+        type="date"
+        value={jumpDate || ""}
+        onChange={(e) => {
+          setJumpDate(e.target.value)
+          setActiveTab("home")
+        }}
+        className="text-sm border border-neutral-200 rounded-md px-2 py-1 bg-white"
+        aria-label="Jump to date"
+      />
+    </nav>
 
-                        <div className="mt-3 flex justify-end">
-                          <button
-                            type="button"
-                            className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-                            onClick={() => setIsGenreOpen(false)}
-                          >
-                            Done
-                          </button>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </nav>
-            </div>
+    {/* Mobile nav */}
+    <nav className="md:hidden w-full flex items-center justify-between">
+      {/* Left: Menu */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen((v) => !v)}
+          className={[
+            "text-sm leading-none px-1 py-1 transition-colors",
+            isMobileMenuOpen ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-800",
+          ].join(" ")}
+        >
+          Menu
+        </button>
 
-            {/* Row 3: Search only */}
-            <div className="w-full px-4 pb-4">
-              {activeTab === "home" ? (
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search titles"
-                  className="w-full rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm"
-                />
-              ) : null}
-            </div>
-          </header>
+        {isMobileMenuOpen ? (
+          <div className="absolute left-0 z-30 mt-2 w-44 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg">
+            {["venues", "partners", "about", "contact"].map((key) => {
+              const item = navItems.find((n) => n.key === key)
+              if (!item) return null
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false)
+                    setActiveTab(item.key)
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg"
+                >
+                  {item.label}
+                </button>
+              )
+            })}
+
+            {import.meta.env.DEV ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  setActiveTab("dev")
+                }}
+                className="w-full text-left px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg"
+              >
+                Dev Tools
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      {/* Middle-left: Today */}
+      <NavButton
+        active={activeTab === "home"}
+        onClick={() => {
+          setJumpDate("")
+          setActiveTab("home")
+        }}
+      >
+        Today
+      </NavButton>
+
+      {/* Middle-right: Genres */}
+      {activeTab === "home" ? (
+        <button
+          type="button"
+          onClick={() => setIsGenreOpen((v) => !v)}
+          className={[
+            "text-sm leading-none px-1 py-1 transition-colors",
+            isGenreOpen ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-800",
+          ].join(" ")}
+        >
+          Genres
+        </button>
+      ) : (
+        <span />
+      )}
+
+      {/* Right: Date picker (icon acceptable) */}
+      <input
+        type="date"
+        value={jumpDate || ""}
+        onChange={(e) => {
+          setJumpDate(e.target.value)
+          setActiveTab("home")
+        }}
+        className="w-10 text-sm border border-neutral-200 rounded-md px-1 py-1 bg-white"
+        aria-label="Jump to date"
+        title="Jump to date"
+      />
+    </nav>
+  </div>
+
+  {/* Row 3: Search */}
+  <div className="h-10 px-4 flex items-center gap-4 border-t border-neutral-200">
+    {activeTab === "home" ? (
+      <>
+        <div className="text-sm text-neutral-600">Search</div>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder=""
+          className="w-full rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm"
+        />
+      </>
+    ) : null}
+  </div>
+</header>
+
 
 
           <main>
