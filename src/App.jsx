@@ -265,12 +265,18 @@ function Shell({
 
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
+    <div
+      className="min-h-screen bg-white text-neutral-900"
+      style={{
+        fontFamily:
+          '"Segoe UI Light","Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif',
+      }}
+    >
       <header className="border-b border-neutral-200">
         <div className="mx-auto max-w-xl px-4 py-4">
           <div className="flex items-baseline justify-between gap-3">
             <h1 className="text-xl font-semibold tracking-tight">
-              Fresno Music Calendar
+              FRESNO MUSIC CALENDAR
             </h1>
             <div className="text-xs text-neutral-500">
               Fresno, CA
@@ -278,6 +284,7 @@ function Shell({
           </div>
 
 <nav className="mt-3 flex flex-wrap items-center gap-2">
+
   {navItems.map((item) => (
     <NavButton
       key={item.key}
