@@ -243,6 +243,8 @@ function Shell({
   setSelectedGenres,
   resetGenresToAll,
   clearGenres,
+  searchQuery,
+  setSearchQuery,
   children,
 }) {
 
@@ -357,7 +359,16 @@ function Shell({
       ) : null}
     </div>
   ) : null}
-
+  {/* Inline: Search (Home only) */}
+  {activeTab === "home" ? (
+    <input
+      type="text"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      placeholder="Search titles"
+      className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm"
+    />
+  ) : null}
 
 </nav>
 
@@ -384,7 +395,7 @@ function Shell({
   )
 }
 
-function HomeView({ filter, anchorDate, selectedGenres }) {
+function HomeView({ filter, anchorDate, selectedGenres, searchQuery }) {
   const filteredEvents = useMemo(() => {
     let list = events
 
@@ -400,18 +411,28 @@ function HomeView({ filter, anchorDate, selectedGenres }) {
       })
     }
 
-    // Genre filter (additive). If none selected, show nothing.
+    // Genre filter (additive).
+    // If none selected, show nothing.
+    // If ALL selected, treat as "no genre filter" so events without genres still show.
     if (selectedGenres instanceof Set) {
       if (selectedGenres.size === 0) return []
-      list = list.filter((e) => {
-        const gs = Array.isArray(e.genres) ? e.genres : []
-        return gs.some((g) => selectedGenres.has(g))
-      })
+      if (selectedGenres.size !== GENRES.length) {
+        list = list.filter((e) => {
+          const gs = Array.isArray(e.genres) ? e.genres : []
+          return gs.some((g) => selectedGenres.has(g))
+        })
+      }
     }
 
+
+    // Search (title-only, case-insensitive)
+    const q = String(searchQuery || "").trim().toLowerCase()
+    if (q) {
+      list = list.filter((e) => String(e.title || "").toLowerCase().includes(q))
+    }
     return list
 
-  }, [filter, selectedGenres])
+  }, [filter, selectedGenres, searchQuery])
 
 const grouped = useMemo(
   () => groupEventsByDate(filteredEvents),
@@ -452,20 +473,22 @@ const grouped = useMemo(
 
 {grouped.length === 0 ? (
   <div className="rounded-xl border border-neutral-200 p-4 text-sm text-neutral-600">
-    No events yet.
+    {String(searchQuery || "").trim()
+      ? "No results."
+      : "No events yet."}
   </div>
 ) : (
   <div className="space-y-5">
     {grouped.map((group) => (
       <DateGroup key={group.date} date={group.date}>
         {group.events.map((e) => (
-  <EventCard key={e.id} event={e} />
-))}
-
+          <EventCard key={e.id} event={e} />
+        ))}
       </DateGroup>
     ))}
   </div>
 )}
+
 
     </div>
   )
@@ -1253,6 +1276,7 @@ export default function App() {
   const [filter, setFilter] = useState(null)
   const [jumpDate, setJumpDate] = useState("")
   const [selectedGenres, setSelectedGenres] = useState(() => new Set(GENRES))
+  const [searchQuery, setSearchQuery] = useState("")
 
   function resetGenresToAll() {
     setSelectedGenres(new Set(GENRES))
@@ -1281,7 +1305,7 @@ const setActiveTabWrapped = (key) => {
 
 
   return (
-    <Shell
+<Shell
       activeTab={activeTab}
       setActiveTab={setActiveTabWrapped}
       jumpDate={jumpDate}
@@ -1290,8 +1314,9 @@ const setActiveTabWrapped = (key) => {
       setSelectedGenres={setSelectedGenres}
       resetGenresToAll={resetGenresToAll}
       clearGenres={clearGenres}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
     >
-
 
       {activeTab === "home" && (
         <div className="space-y-3">
@@ -1305,10 +1330,11 @@ const setActiveTabWrapped = (key) => {
             </button>
           ) : null}
 
-                    <HomeView
+<HomeView
   filter={filter}
   anchorDate={jumpDate}
   selectedGenres={selectedGenres}
+  searchQuery={searchQuery}
 />
 
 
