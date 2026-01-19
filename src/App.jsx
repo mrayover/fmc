@@ -154,7 +154,7 @@ function DateGroup({ date, children }) {
   const key = normalizeDateToYMD(date) || String(date || "")
   return (
     <section id={`date-${key}`} className="space-y-2">
-      <div className="sticky top-0 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+      <div className="sticky top-[144px] bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <h3 className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm font-medium">
           {formatDateLabel(date)}
         </h3>
@@ -163,6 +163,7 @@ function DateGroup({ date, children }) {
     </section>
   )
 }
+
 
 
 function EventCard({ event }) {
@@ -266,22 +267,34 @@ function Shell({
 
   return (
     <div
-      className="min-h-screen bg-white text-neutral-900"
+      className="min-h-screen text-neutral-900"
       style={{
         fontFamily:
           '"Segoe UI Light","Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif',
       }}
     >
-      <header className="border-b border-neutral-200">
-        <div className="mx-auto max-w-xl px-4 py-4">
-          <div className="flex items-baseline justify-between gap-3">
-            <h1 className="text-xl font-semibold tracking-tight">
-              FRESNO MUSIC CALENDAR
-            </h1>
-            <div className="text-xs text-neutral-500">
-              Fresno, CA
-            </div>
-          </div>
+      {/* Global frame: inert | active | inert */}
+        <div className="min-h-screen w-screen md:bg-[#B87333]">
+
+
+
+        {/* Inert field (left) */}
+        <div
+          aria-hidden="true"
+          className="hidden md:block md:col-start-1 md:col-end-2"
+          style={{ background: "#B87333" }}
+        />
+
+        {/* Active content column */}
+        <div className="min-h-screen bg-white w-full md:mx-auto md:max-w-xl">
+          <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+            <div className="mx-auto max-w-xl px-4 py-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <h1 className="text-xl font-semibold tracking-tight">
+                  FRESNO MUSIC CALENDAR
+                </h1>
+
+              </div>
 
 <nav className="mt-3 flex flex-wrap items-center gap-2">
 
@@ -379,29 +392,35 @@ function Shell({
 
 </nav>
 
+            </div>
+          </header>
 
+          <main>
+            <div className="mx-auto max-w-xl px-4 py-6">{children}</div>
+          </main>
 
+          <footer className="border-t border-neutral-200">
+            <div className="mx-auto max-w-xl px-4 py-5 text-sm text-neutral-600">
+              <p>
+                Send show info or a flyer:{" "}
+                <a className="underline" href="mailto:fresnomusiccalendar@gmail.com">
+                  fresnomusiccalendar@gmail.com
+                </a>
+              </p>
+            </div>
+          </footer>
         </div>
-      </header>
 
-      <main>
-        <div className="mx-auto max-w-xl px-4 py-6">{children}</div>
-      </main>
-
-      <footer className="border-t border-neutral-200">
-        <div className="mx-auto max-w-xl px-4 py-5 text-sm text-neutral-600">
-          <p>
-            Send show info or a flyer:{" "}
-<a className="underline" href="mailto:fresnomusiccalendar@gmail.com">
-  fresnomusiccalendar@gmail.com
-</a>
-          </p>
-        </div>
-      </footer>
+        {/* Inert field (right) */}
+        <div
+          aria-hidden="true"
+          className="hidden md:block md:col-start-3 md:col-end-4"
+          style={{ background: "#B87333" }}
+        />
+      </div>
     </div>
   )
 }
-
 function HomeView({ filter, anchorDate, selectedGenres, searchQuery }) {
   const filteredEvents = useMemo(() => {
     let list = events
@@ -1278,6 +1297,7 @@ function DevToolsView() {
   )
 }
 
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("home")
   const [filter, setFilter] = useState(null)
@@ -1366,5 +1386,6 @@ const setActiveTabWrapped = (key) => {
     </Shell>
   )
 }
+
 
 
