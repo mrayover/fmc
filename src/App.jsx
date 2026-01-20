@@ -156,7 +156,7 @@ function DateGroup({ date, children }) {
   const key = normalizeDateToYMD(date) || String(date || "")
   return (
     <section id={`date-${key}`} className="space-y-2">
-      <div className="sticky top-[144px] bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+      <div className="mb-2 flex justify-center">
         <h3 className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm font-medium">
           {formatDateLabel(date)}
         </h3>
@@ -165,6 +165,9 @@ function DateGroup({ date, children }) {
     </section>
   )
 }
+
+
+
 
 
 
@@ -300,7 +303,7 @@ function Shell({
     className="h-16 px-4 flex items-center justify-center"
     style={{ height: 64 }}
   >
-      <h1 className="text-xl font-semibold tracking-tight text-center">
+      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-center">
         FRESNO MUSIC CALENDAR
       </h1>
     </div>
@@ -623,7 +626,7 @@ function Shell({
 
 
 <main className="overflow-x-hidden">
-  <div className="w-full px-4 py-6">{children}</div>
+  <div className="w-full px-4 py-3">{children}</div>
 </main>
 
         <footer className="border-t border-neutral-200">
@@ -698,9 +701,19 @@ const grouped = useMemo(
 
     requestAnimationFrame(() => {
       const el = document.getElementById(`date-${key}`)
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+      if (!el) return
+
+      const headerEl = document.querySelector("header")
+      const headerH = headerEl ? headerEl.getBoundingClientRect().height : 0
+
+      const y =
+        el.getBoundingClientRect().top + window.scrollY - headerH - 8
+
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" })
     })
   }, [anchorDate, grouped.length])
+
+
 
   const filterLabel = useMemo(() => {
     if (!filter?.type || !filter?.id) return null
@@ -715,16 +728,19 @@ const grouped = useMemo(
   }, [filter])
 
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-lg font-semibold">Today & Upcoming</h2>
-        {filterLabel ? (
-          <div className="text-xs text-neutral-500">
-            Filter: <span className="text-neutral-800">{filterLabel}</span>
-          </div>
-        ) : null}
-      </div>
+return (
+  <div className="space-y-2">
+    <div className="flex flex-col items-center gap-0">
+      <h2 className="text-base font-medium leading-tight">Today & Upcoming</h2>
+
+      {filterLabel ? (
+        <div className="text-xs text-neutral-500">
+          Filter: <span className="text-neutral-800">{filterLabel}</span>
+        </div>
+      ) : null}
+    </div>
+
+
 
 {grouped.length === 0 ? (
   <div className="rounded-xl border border-neutral-200 p-4 text-sm text-neutral-600">
