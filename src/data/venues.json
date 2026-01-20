@@ -2,16 +2,22 @@
   {
     "id": "goldsteins",
     "name": "Goldstein's Mortuary & Delicatessen",
-    "link": "https://www.instagram.com/goldsteinsbeer/"
+    "link": "https://www.instagram.com/goldsteinsbeer/",
+    "address": "",
+    "mapLink": ""
   },
   {
     "id": "strummers",
     "name": "Strummer’s",
-    "link": "https://www.instagram.com/strummersfresno/"
+    "link": "https://www.instagram.com/strummersfresno/",
+    "address": "",
+    "mapLink": ""
   },
   {
     "id": "fulton55",
     "name": "Fulton 55",
-    "link": "https://www.instagram.com/fulton55/"
+    "link": "https://www.instagram.com/fulton55/",
+    "address": "",
+    "mapLink": ""
   }
 ]

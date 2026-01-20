@@ -166,18 +166,56 @@ function DateGroup({ date, children }) {
   )
 }
 
-
-
-
-
-
-function EventCard({ event }) {
+function EventCard({ event, isOpen, onToggle }) {
   const venue = getVenueById(event.venueId)
   const href = event.link || venue?.link || null
 
+  const partnerName = (() => {
+    const ids = Array.isArray(event.partnerIds) ? event.partnerIds : []
+    if (ids.length === 0) return null
+    const want = slugifyId(ids[0])
+    return partners.find((p) => slugifyId(p.id) === want)?.name || ids[0]
+  })()
+
+  const genreText = (() => {
+    const gs = Array.isArray(event.genres) ? event.genres : []
+    if (gs.length === 0) return null
+    return gs.join(", ")
+  })()
+
+  const venueAddress = venue?.address ? String(venue.address) : null
+  const venueMapLink = venue?.mapLink ? String(venue.mapLink) : null
+
   return (
-    <article className="rounded-xl border border-neutral-200 p-4">
-      <div className="flex items-start justify-between gap-3">
+
+        <article
+      className="rounded-xl border border-neutral-200 p-4 cursor-pointer select-none"
+      onClick={onToggle}
+      role="button"
+      tabIndex={0}
+      aria-expanded={!!isOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onToggle?.()
+        }
+      }}
+    >
+            {/* MOBILE collapsed header row (always visible) */}
+            {/* MOBILE collapsed header row (always visible) */}
+      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 md:hidden">
+        <div className="min-w-0 font-semibold leading-snug truncate">
+          {event.title}
+        </div>
+        <div className="text-sm text-neutral-700 whitespace-nowrap">
+          {event.time || "Time TBA"}
+        </div>
+        <div className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]">
+          {venue?.name || "Venue TBA"}
+        </div>
+      </div>
+     {/* DESKTOP temporary fallback (Step 5 will replace with the locked desktop layouts) */}
+      <div className="hidden md:flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h4 className="font-semibold leading-snug">{event.title}</h4>
           <div className="mt-1 text-sm text-neutral-700">
@@ -193,36 +231,100 @@ function EventCard({ event }) {
             href={href}
             target="_blank"
             rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
           >
             Link
           </a>
         ) : null}
       </div>
+      {/* MOBILE expanded body */}
+      {isOpen ? (
+        <div className="mt-3 space-y-2 md:hidden">
+          {/* Venue – Address (Map Link) */}
+          <div className="text-sm text-neutral-800">
+            <span className="font-medium">{venue?.name || "Venue TBA"}</span>
+            {venueAddress ? (
+              <>
+                {" — "}
+                {venueMapLink ? (
+                  <a
+                    href={venueMapLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {venueAddress}
+                  </a>
+                ) : (
+                  <span>{venueAddress}</span>
+                )}
+              </>
+            ) : null}
+          </div>
 
-      {event.flyer ? (
-        <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200">
+          {/* Genre | Partner* (no placeholders) */}
+          {(genreText || partnerName) ? (
+            <div className="grid grid-cols-2 gap-3 text-sm text-neutral-700">
+              <div className="min-w-0 truncate">{genreText || ""}</div>
+              <div className="min-w-0 truncate text-right">
+                {partnerName || ""}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Flyer* (standardized size already established) */}
+          {event.flyer ? (
+            <div className="overflow-hidden rounded-lg border border-neutral-200">
+              {href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={event.flyer}
+                    alt={`${event.title} flyer`}
+                    className="block w-full max-h-[420px] object-contain bg-neutral-100"
+                    loading="lazy"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </a>
+              ) : (
+                <img
+                  src={event.flyer}
+                  alt={`${event.title} flyer`}
+                  className="block w-full max-h-[420px] object-contain bg-neutral-100"
+                  loading="lazy"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
+            </div>
+          ) : null}
+
+          {/* Event Link (no placeholder) */}
           {href ? (
-            <a href={href} target="_blank" rel="noreferrer">
-              <img
-                src={event.flyer}
-                alt={`${event.title} flyer`}
-                className="block w-full max-h-[420px] object-contain bg-neutral-100"
-                loading="lazy"
-              />
-            </a>
-          ) : (
-            <img
-              src={event.flyer}
-              alt={`${event.title} flyer`}
-              className="block w-full max-h-[420px] object-contain bg-neutral-100"
-              loading="lazy"
-            />
-          )}
+            <div className="pt-1">
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm hover:bg-neutral-50"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Event Link
+              </a>
+            </div>
+          ) : null}
         </div>
       ) : null}
+
+
     </article>
   )
 }
+
 
 function NavButton({ active, children, onClick }) {
   return (
@@ -293,9 +395,9 @@ function Shell({
   className="min-h-screen bg-[#B87333]"
 />
         {/* Active content column */}
-<div className="min-h-screen bg-white w-full col-start-2">
+<div className="min-h-screen bg-[#fffbf7] w-full col-start-2">
 <header
-  className="sticky top-0 z-50 border-b border-neutral-200 bg-white"
+  className="sticky top-0 z-50 border-b border-neutral-200 bg-[#fffbf7]"
   style={{ position: "sticky", top: 0, zIndex: 50 }}
 >
   {/* Row 1: Title only */}
@@ -609,17 +711,20 @@ function Shell({
     className="h-10 px-4 flex items-center border-t border-neutral-200"
     style={{ height: 40 }}
   >
-      <input
-        type="text"
-        value={activeTab === "home" ? searchQuery : ""}
-        onChange={(e) => {
-          if (activeTab === "home") setSearchQuery(e.target.value)
-        }}
-        placeholder=""
-        disabled={activeTab !== "home"}
-        className="w-full rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm disabled:opacity-0"
-        aria-label="Search events"
-      />
+<input
+  type="text"
+  value={activeTab === "home" ? searchQuery : ""}
+  onChange={(e) => {
+    if (activeTab === "home") setSearchQuery(e.target.value)
+  }}
+  placeholder="Search Events"
+  disabled={activeTab !== "home"}
+  className="w-full rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm
+             placeholder:text-neutral-400 focus:placeholder-transparent
+             disabled:opacity-0"
+  aria-label="Search events"
+/>
+
     </div>
   </header>
 
@@ -713,7 +818,17 @@ const grouped = useMemo(
     })
   }, [anchorDate, grouped.length])
 
+  // Step 2: persistent open state (multiple cards can be open)
+  const [openEventIds, setOpenEventIds] = useState(() => new Set())
 
+  function toggleEventOpen(id) {
+    setOpenEventIds((prev) => {
+      const next = new Set(prev || [])
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const filterLabel = useMemo(() => {
     if (!filter?.type || !filter?.id) return null
@@ -726,6 +841,7 @@ const grouped = useMemo(
     }
     return null
   }, [filter])
+
 
 
 return (
@@ -753,10 +869,16 @@ return (
     {grouped.map((group) => (
       <DateGroup key={group.date} date={group.date}>
         {group.events.map((e) => (
-          <EventCard key={e.id} event={e} />
+          <EventCard
+            key={e.id}
+            event={e}
+            isOpen={openEventIds.has(e.id)}
+            onToggle={() => toggleEventOpen(e.id)}
+          />
         ))}
       </DateGroup>
     ))}
+
   </div>
 )}
 
@@ -914,8 +1036,15 @@ function DevToolsView() {
     link: "",
   })
 
-  const [venueDraft, setVenueDraft] = useState({ id: "", name: "", link: "" })
+  const [venueDraft, setVenueDraft] = useState({
+    id: "",
+    name: "",
+    link: "",
+    address: "",
+    mapLink: "",
+  })
   const [partnerDraft, setPartnerDraft] = useState({ id: "", name: "", link: "" })
+
 
   function parsePartnerIds(input) {
     return String(input || "")
@@ -1121,7 +1250,7 @@ function DevToolsView() {
     }
   }
 
-    async function addVenue() {
+  async function addVenue() {
     try {
       setStatus("Saving venue…")
 
@@ -1129,6 +1258,8 @@ function DevToolsView() {
         id: venueDraft.id.trim(),
         name: venueDraft.name.trim(),
         link: venueDraft.link.trim(),
+        address: venueDraft.address.trim(),
+        mapLink: venueDraft.mapLink.trim(),
       }
 
       const res = await fetch(`${API}/api/venues/add`, {
@@ -1139,12 +1270,19 @@ function DevToolsView() {
       const out = await res.json()
       if (!out.ok) throw new Error(out.error || "Failed to save venue")
 
-      setVenueDraft({ id: "", name: "", link: "" })
+      setVenueDraft({
+        id: "",
+        name: "",
+        link: "",
+        address: "",
+        mapLink: "",
+      })
       await fetchAll()
     } catch (err) {
       setStatus(`Error: ${err?.message || String(err)}`)
     }
   }
+
 
   async function addPartner() {
     try {
@@ -1418,7 +1556,7 @@ function DevToolsView() {
         )}
       </div>
 
-      {/* Add Venue */}
+            {/* Add Venue */}
       <div className="rounded-xl border border-neutral-200 p-4 space-y-3">
         <h3 className="font-medium">Add Venue (writes to disk)</h3>
 
@@ -1451,6 +1589,26 @@ function DevToolsView() {
             />
           </div>
 
+          <div>
+            <label className="text-sm font-medium">address</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+              value={venueDraft.address}
+              onChange={(e) => setVenueDraft((d) => ({ ...d, address: e.target.value }))}
+              placeholder="e.g. 933 Van Ness Ave, Fresno, CA 93721"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">mapLink</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+              value={venueDraft.mapLink}
+              onChange={(e) => setVenueDraft((d) => ({ ...d, mapLink: e.target.value }))}
+              placeholder="e.g. https://maps.google.com/?q=..."
+            />
+          </div>
+
           <button
             type="button"
             onClick={addVenue}
@@ -1460,6 +1618,7 @@ function DevToolsView() {
           </button>
         </div>
       </div>
+
 
       {/* Add Partner */}
       <div className="rounded-xl border border-neutral-200 p-4 space-y-3">
