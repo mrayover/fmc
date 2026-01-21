@@ -235,8 +235,8 @@ function EventCard({ event, isOpen, onToggle }) {
 
 
 
-                  {/* DESKTOP collapsed row (always visible) */}
-<div className="hidden md:grid md:grid-cols-[auto_minmax(0,1.3fr)_minmax(0,2fr)_minmax(0,1fr)] items-center gap-4">
+{/* DESKTOP collapsed row (always visible) */}
+<div className="hidden md:grid md:grid-cols-[auto_minmax(0,1.1fr)_minmax(0,3fr)_minmax(0,0.9fr)] items-center gap-4">
   {event.time ? (
     <div className="text-sm text-neutral-800 whitespace-nowrap">
       {event.time}
@@ -253,7 +253,12 @@ function EventCard({ event, isOpen, onToggle }) {
     <div />
   )}
 
-  <div className="min-w-0 font-semibold leading-snug truncate">
+  <div
+    className={[
+      "min-w-0 font-semibold leading-snug text-left",
+      isOpen ? "whitespace-normal break-words" : "truncate",
+    ].join(" ")}
+  >
     {event.title || ""}
   </div>
 
@@ -265,7 +270,6 @@ function EventCard({ event, isOpen, onToggle }) {
     <div />
   )}
 </div>
-
 
 {/* MOBILE expanded layout (renders on tap) */}
 {isOpen ? (
@@ -354,15 +358,16 @@ function EventCard({ event, isOpen, onToggle }) {
 ) : null}
 
       {/* DESKTOP expanded layout (no duplicate of collapsed-row info) */}
-      {isOpen ? (
-        <div className="hidden md:block mt-3 space-y-3">
+{isOpen ? (
+  <div className="hidden md:block mt-3 space-y-3">
+
           {/* Venue – Address (Map Link) + Partner* */}
           {(venueAddress || partnerName) ? (
             <div className="grid grid-cols-[1fr_minmax(0,12rem)] items-start gap-4 text-sm text-neutral-800">
               <div className="min-w-0">
                 {venueAddress ? (
                   <>
-                    <span className="font-medium">{venue?.name || "Venue TBA"}</span>
+                    <span className="font-medium">{venue.name}</span>
                     {" — "}
                     {venueMapLink ? (
                       <a
