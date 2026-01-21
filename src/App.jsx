@@ -201,19 +201,30 @@ function EventCard({ event, isOpen, onToggle }) {
         }
       }}
     >
-            {/* MOBILE collapsed header row (always visible) */}
-            {/* MOBILE collapsed header row (always visible) */}
-      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 md:hidden">
-        <div className="min-w-0 font-semibold leading-snug truncate">
-          {event.title}
-        </div>
-        <div className="text-sm text-neutral-700 whitespace-nowrap">
-          {event.time || "Time TBA"}
-        </div>
-        <div className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]">
-          {venue?.name || "Venue TBA"}
-        </div>
-            </div>
+{/* MOBILE collapsed header row (always visible) */}
+<div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 md:hidden">
+  <div className="min-w-0">
+    <div className="font-semibold leading-snug truncate">
+      {event.title || ""}
+    </div>
+
+    {/* Genre on closed card (optional; no placeholder) */}
+    {genreText ? (
+      <div className="text-xs text-neutral-600 truncate">
+        {genreText}
+      </div>
+    ) : null}
+  </div>
+
+  <div className="text-sm text-neutral-700 whitespace-nowrap">
+    {event.time || "Time TBA"}
+  </div>
+
+  <div className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]">
+    {venue?.name || "Venue TBA"}
+  </div>
+</div>
+
 
                   {/* DESKTOP collapsed row (always visible) */}
       <div className="hidden md:grid md:grid-cols-[auto_minmax(0,1.3fr)_minmax(0,2fr)_minmax(0,1fr)] items-center gap-4">
@@ -238,7 +249,86 @@ function EventCard({ event, isOpen, onToggle }) {
         )}
       </div>
 
+{/* MOBILE expanded layout (renders on tap) */}
+{isOpen ? (
+  <div className="md:hidden mt-3 space-y-3">
+    {/* Venue address (map link) + Partner (optional). No placeholders */}
+    {(venueAddress || partnerName) ? (
+      <div className="text-sm text-neutral-800 space-y-1">
+        {venueAddress ? (
+          <div className="min-w-0">
+            <span className="font-medium">{venue?.name || "Venue TBA"}</span>
+            {" — "}
+            {venueMapLink ? (
+              <a
+                href={venueMapLink}
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {venueAddress}
+              </a>
+            ) : (
+              <span>{venueAddress}</span>
+            )}
+          </div>
+        ) : null}
 
+        {partnerName ? (
+          <div className="text-neutral-700">
+            {partnerName}
+          </div>
+        ) : null}
+      </div>
+    ) : null}
+
+    {/* Flyer (optional) */}
+    {event.flyer ? (
+      <div className="overflow-hidden rounded-lg border border-neutral-200">
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={event.flyer}
+              alt={`${event.title} flyer`}
+              className="block w-full max-h-[360px] object-contain bg-neutral-100"
+              loading="lazy"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </a>
+        ) : (
+          <img
+            src={event.flyer}
+            alt={`${event.title} flyer`}
+            className="block w-full max-h-[360px] object-contain bg-neutral-100"
+            loading="lazy"
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+      </div>
+    ) : null}
+
+    {/* Event Link (optional) */}
+    {href ? (
+      <div className="pt-1">
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center justify-center w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm hover:bg-neutral-50"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Event Link
+        </a>
+      </div>
+    ) : null}
+  </div>
+) : null}
 
       {/* DESKTOP expanded layout (no duplicate of collapsed-row info) */}
       {isOpen ? (
