@@ -213,67 +213,70 @@ function EventCard({ event, isOpen, onToggle }) {
         <div className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]">
           {venue?.name || "Venue TBA"}
         </div>
-      </div>
-     {/* DESKTOP temporary fallback (Step 5 will replace with the locked desktop layouts) */}
-      <div className="hidden md:flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h4 className="font-semibold leading-snug">{event.title}</h4>
-          <div className="mt-1 text-sm text-neutral-700">
-            <span className="font-medium">{event.time || "Time TBA"}</span>
-            {" · "}
-            <span>{venue?.name || "Venue TBA"}</span>
-          </div>
+            </div>
+
+                  {/* DESKTOP collapsed row (always visible) */}
+      <div className="hidden md:grid md:grid-cols-[auto_minmax(0,1.3fr)_minmax(0,2fr)_minmax(0,1fr)] items-center gap-4">
+        <div className="text-sm text-neutral-800 whitespace-nowrap">
+          {event.time || "Time TBA"}
         </div>
 
-        {href ? (
-          <a
-            className="shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            Link
-          </a>
-        ) : null}
-      </div>
-      {/* MOBILE expanded body */}
-      {isOpen ? (
-        <div className="mt-3 space-y-2 md:hidden">
-          {/* Venue – Address (Map Link) */}
-          <div className="text-sm text-neutral-800">
-            <span className="font-medium">{venue?.name || "Venue TBA"}</span>
-            {venueAddress ? (
-              <>
-                {" — "}
-                {venueMapLink ? (
-                  <a
-                    href={venueMapLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {venueAddress}
-                  </a>
-                ) : (
-                  <span>{venueAddress}</span>
-                )}
-              </>
-            ) : null}
-          </div>
+        <div className="text-sm text-neutral-800 truncate">
+          {venue?.name || "Venue TBA"}
+        </div>
 
-          {/* Genre | Partner* (no placeholders) */}
-          {(genreText || partnerName) ? (
-            <div className="grid grid-cols-2 gap-3 text-sm text-neutral-700">
-              <div className="min-w-0 truncate">{genreText || ""}</div>
-              <div className="min-w-0 truncate text-right">
-                {partnerName || ""}
+        <div className="min-w-0 font-semibold leading-snug truncate">
+          {event.title || ""}
+        </div>
+
+        {genreText ? (
+          <div className="text-sm text-neutral-700 truncate">
+            {genreText}
+          </div>
+        ) : (
+          <div />
+        )}
+      </div>
+
+
+
+      {/* DESKTOP expanded layout (no duplicate of collapsed-row info) */}
+      {isOpen ? (
+        <div className="hidden md:block mt-3 space-y-3">
+          {/* Venue – Address (Map Link) + Partner* */}
+          {(venueAddress || partnerName) ? (
+            <div className="grid grid-cols-[1fr_minmax(0,12rem)] items-start gap-4 text-sm text-neutral-800">
+              <div className="min-w-0">
+                {venueAddress ? (
+                  <>
+                    <span className="font-medium">{venue?.name || "Venue TBA"}</span>
+                    {" — "}
+                    {venueMapLink ? (
+                      <a
+                        href={venueMapLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {venueAddress}
+                      </a>
+                    ) : (
+                      <span>{venueAddress}</span>
+                    )}
+                  </>
+                ) : null}
               </div>
+
+              {partnerName ? (
+                <div className="min-w-0 truncate text-right text-neutral-700">
+                  {partnerName}
+                </div>
+              ) : null}
             </div>
           ) : null}
 
-          {/* Flyer* (standardized size already established) */}
+          {/* Flyer* */}
           {event.flyer ? (
             <div className="overflow-hidden rounded-lg border border-neutral-200">
               {href ? (
@@ -303,7 +306,7 @@ function EventCard({ event, isOpen, onToggle }) {
             </div>
           ) : null}
 
-          {/* Event Link (no placeholder) */}
+          {/* Event Link */}
           {href ? (
             <div className="pt-1">
               <a
@@ -319,6 +322,7 @@ function EventCard({ event, isOpen, onToggle }) {
           ) : null}
         </div>
       ) : null}
+
 
 
     </article>
