@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import events from "./data/events.json"
 import venues from "./data/venues.json"
@@ -216,38 +216,56 @@ function EventCard({ event, isOpen, onToggle }) {
     ) : null}
   </div>
 
-  <div className="text-sm text-neutral-700 whitespace-nowrap">
-    {event.time || "Time TBA"}
-  </div>
+  {event.time ? (
+    <div className="text-sm text-neutral-700 whitespace-nowrap">
+      {event.time}
+    </div>
+  ) : (
+    <div />
+  )}
 
-  <div className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]">
-    {venue?.name || "Venue TBA"}
-  </div>
+  {venue?.name ? (
+    <div className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]">
+      {venue.name}
+    </div>
+  ) : (
+    <div />
+  )}
 </div>
 
 
+
                   {/* DESKTOP collapsed row (always visible) */}
-      <div className="hidden md:grid md:grid-cols-[auto_minmax(0,1.3fr)_minmax(0,2fr)_minmax(0,1fr)] items-center gap-4">
-        <div className="text-sm text-neutral-800 whitespace-nowrap">
-          {event.time || "Time TBA"}
-        </div>
+<div className="hidden md:grid md:grid-cols-[auto_minmax(0,1.3fr)_minmax(0,2fr)_minmax(0,1fr)] items-center gap-4">
+  {event.time ? (
+    <div className="text-sm text-neutral-800 whitespace-nowrap">
+      {event.time}
+    </div>
+  ) : (
+    <div />
+  )}
 
-        <div className="text-sm text-neutral-800 truncate">
-          {venue?.name || "Venue TBA"}
-        </div>
+  {venue?.name ? (
+    <div className="text-sm text-neutral-800 truncate">
+      {venue.name}
+    </div>
+  ) : (
+    <div />
+  )}
 
-        <div className="min-w-0 font-semibold leading-snug truncate">
-          {event.title || ""}
-        </div>
+  <div className="min-w-0 font-semibold leading-snug truncate">
+    {event.title || ""}
+  </div>
 
-        {genreText ? (
-          <div className="text-sm text-neutral-700 truncate">
-            {genreText}
-          </div>
-        ) : (
-          <div />
-        )}
-      </div>
+  {genreText ? (
+    <div className="text-sm text-neutral-700 truncate">
+      {genreText}
+    </div>
+  ) : (
+    <div />
+  )}
+</div>
+
 
 {/* MOBILE expanded layout (renders on tap) */}
 {isOpen ? (
@@ -257,8 +275,13 @@ function EventCard({ event, isOpen, onToggle }) {
       <div className="text-sm text-neutral-800 space-y-1">
         {venueAddress ? (
           <div className="min-w-0">
-            <span className="font-medium">{venue?.name || "Venue TBA"}</span>
-            {" — "}
+{venue?.name ? (
+  <>
+    <span className="font-medium">{venue.name}</span>
+    {" — "}
+  </>
+
+) : null}
             {venueMapLink ? (
               <a
                 href={venueMapLink}
@@ -462,12 +485,43 @@ function Shell({
   const [isGenreOpen, setIsGenreOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  const mobileMenuRef = useRef(null)
+  const mobileGenreRef = useRef(null)
+
+
   function toggleAllGenres() {
     const count = selectedGenres?.size || 0
     const isAllSelected = count === GENRES.length
     if (isAllSelected) clearGenres()
     else resetGenresToAll()
   }
+
+  useEffect(() => {
+    if (!isMobileMenuOpen && !isGenreOpen) return
+
+    function onDocPointerDown(e) {
+      const t = e.target
+
+      if (
+        isMobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(t)
+      ) {
+        setIsMobileMenuOpen(false)
+      }
+
+      if (
+        isGenreOpen &&
+        mobileGenreRef.current &&
+        !mobileGenreRef.current.contains(t)
+      ) {
+        setIsGenreOpen(false)
+      }
+    }
+
+    document.addEventListener("pointerdown", onDocPointerDown)
+    return () => document.removeEventListener("pointerdown", onDocPointerDown)
+  }, [isMobileMenuOpen, isGenreOpen])
 
 
   return (
@@ -652,7 +706,7 @@ function Shell({
       {/* Mobile nav */}
       <nav className="md:hidden w-full flex items-center justify-between">
         {/* Left: Menu (dropdown) */}
-        <div className="relative">
+        <div className="relative" ref={mobileMenuRef}>
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen((v) => !v)}
@@ -715,7 +769,7 @@ function Shell({
 
         {/* Middle-right: Genre (mobile) */}
         {activeTab === "home" ? (
-          <div className="relative">
+          <div className="relative" ref={mobileGenreRef}>
             <button
               type="button"
               onClick={() => setIsGenreOpen((v) => !v)}
@@ -730,7 +784,7 @@ function Shell({
             </button>
 
             {isGenreOpen ? (
-              <div className="absolute left-0 z-30 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
+              <div className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium">Genres</div>
                   <button
