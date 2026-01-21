@@ -3,21 +3,21 @@
     "id": "goldsteins",
     "name": "Goldstein's Mortuary & Delicatessen",
     "link": "https://www.instagram.com/goldsteinsbeer/",
-    "address": "",
-    "mapLink": ""
+    "address": "1279 N Wishon Ave, Fresno, CA 93728",
+    "mapLink": "https://maps.app.goo.gl/pZ4RexcaxVbYQHCr5"
   },
   {
     "id": "strummers",
     "name": "Strummer’s",
     "link": "https://www.instagram.com/strummersfresno/",
-    "address": "",
-    "mapLink": ""
+    "address": "833 E Fern Ave, Fresno, CA 93728",
+    "mapLink": "https://maps.app.goo.gl/mLmob9FJ9VZVSnYa6"
   },
   {
     "id": "fulton55",
     "name": "Fulton 55",
     "link": "https://www.instagram.com/fulton55/",
-    "address": "",
-    "mapLink": ""
+    "address": "875 Divisadero St, Fresno, CA 93721",
+    "mapLink": "https://maps.app.goo.gl/cgUnTCbCfPjX4mej9"
   }
 ]

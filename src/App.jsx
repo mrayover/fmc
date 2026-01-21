@@ -165,6 +165,30 @@ function DateGroup({ date, children }) {
     </section>
   )
 }
+function TruncateWithTitle({ text, className = "" }) {
+  const ref = useRef(null)
+  const [isTruncated, setIsTruncated] = useState(false)
+
+  function measure() {
+    const el = ref.current
+    if (!el) return
+    // If content is wider than the visible box, it’s truncated
+    setIsTruncated(el.scrollWidth > el.clientWidth)
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      title={isTruncated ? String(text || "") : undefined}
+      onMouseEnter={measure}
+      onFocus={measure}
+      tabIndex={0}
+    >
+      {text || ""}
+    </div>
+  )
+}
 
 function EventCard({ event, isOpen, onToggle }) {
   const venue = getVenueById(event.venueId)
@@ -204,9 +228,10 @@ function EventCard({ event, isOpen, onToggle }) {
 {/* MOBILE collapsed header row (always visible) */}
 <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 md:hidden">
   <div className="min-w-0">
-    <div className="font-semibold leading-snug truncate">
-      {event.title || ""}
-    </div>
+<TruncateWithTitle
+  text={event.title}
+  className="font-semibold leading-snug truncate"
+/>
 
     {/* Genre on closed card (optional; no placeholder) */}
     {genreText ? (
@@ -225,9 +250,11 @@ function EventCard({ event, isOpen, onToggle }) {
   )}
 
   {venue?.name ? (
-    <div className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]">
-      {venue.name}
-    </div>
+<TruncateWithTitle
+  text={venue.name}
+  className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]"
+/>
+
   ) : (
     <div />
   )}
@@ -246,9 +273,10 @@ function EventCard({ event, isOpen, onToggle }) {
   )}
 
   {venue?.name ? (
-    <div className="text-sm text-neutral-800 truncate">
-      {venue.name}
-    </div>
+<TruncateWithTitle
+  text={venue.name}
+  className="text-sm text-neutral-800 truncate"
+/>
   ) : (
     <div />
   )}
@@ -263,9 +291,10 @@ function EventCard({ event, isOpen, onToggle }) {
   </div>
 
   {genreText ? (
-    <div className="text-sm text-neutral-700 truncate">
-      {genreText}
-    </div>
+<TruncateWithTitle
+  text={genreText}
+  className="text-sm text-neutral-700 truncate"
+/>
   ) : (
     <div />
   )}
@@ -274,41 +303,44 @@ function EventCard({ event, isOpen, onToggle }) {
 {/* MOBILE expanded layout (renders on tap) */}
 {isOpen ? (
   <div className="md:hidden mt-3 space-y-3">
-    {/* Venue address (map link) + Partner (optional). No placeholders */}
-    {(venueAddress || partnerName) ? (
-      <div className="text-sm text-neutral-800 space-y-1">
-        {venueAddress ? (
-          <div className="min-w-0">
-{venue?.name ? (
-  <>
-    <span className="font-medium">{venue.name}</span>
-    {" — "}
-  </>
-
-) : null}
-            {venueMapLink ? (
-              <a
-                href={venueMapLink}
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {venueAddress}
-              </a>
-            ) : (
-              <span>{venueAddress}</span>
-            )}
+{/* Venue address (map link) + Partner (optional). No placeholders */}
+{(venueAddress || partnerName) ? (
+  <div className="text-sm text-neutral-800 space-y-2">
+    {venueAddress ? (
+      <div className="min-w-0">
+        {venue?.name ? (
+          <div className="font-medium truncate">
+            {venue.name}
           </div>
         ) : null}
 
-        {partnerName ? (
-          <div className="text-neutral-700">
-            {partnerName}
-          </div>
-        ) : null}
+        <div className={venue?.name ? "mt-0.5" : ""}>
+          {venueMapLink ? (
+            <a
+              href={venueMapLink}
+              target="_blank"
+              rel="noreferrer"
+              className="underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {venueAddress}
+            </a>
+          ) : (
+            <span>{venueAddress}</span>
+          )}
+        </div>
       </div>
     ) : null}
+
+    {partnerName ? (
+      <div className="text-neutral-700">
+        <div className="text-xs text-neutral-500">Partner</div>
+        <div>{partnerName}</div>
+      </div>
+    ) : null}
+  </div>
+) : null}
+
 
     {/* Flyer (optional) */}
     {event.flyer ? (
@@ -362,37 +394,43 @@ function EventCard({ event, isOpen, onToggle }) {
   <div className="hidden md:block mt-3 space-y-3">
 
           {/* Venue – Address (Map Link) + Partner* */}
-          {(venueAddress || partnerName) ? (
-            <div className="grid grid-cols-[1fr_minmax(0,12rem)] items-start gap-4 text-sm text-neutral-800">
-              <div className="min-w-0">
-                {venueAddress ? (
-                  <>
-                    <span className="font-medium">{venue.name}</span>
-                    {" — "}
-                    {venueMapLink ? (
-                      <a
-                        href={venueMapLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {venueAddress}
-                      </a>
-                    ) : (
-                      <span>{venueAddress}</span>
-                    )}
-                  </>
-                ) : null}
-              </div>
+{(venueAddress || partnerName) ? (
+  <div className="grid grid-cols-[1fr_minmax(0,12rem)] items-start gap-4 text-sm text-neutral-800">
+    <div className="min-w-0">
+      {venue?.name ? (
+        <div className="font-medium truncate">
+          {venue.name}
+        </div>
+      ) : null}
 
-              {partnerName ? (
-                <div className="min-w-0 truncate text-right text-neutral-700">
-                  {partnerName}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+      {venueAddress ? (
+        <div className={venue?.name ? "mt-0.5" : ""}>
+          {venueMapLink ? (
+            <a
+              href={venueMapLink}
+              target="_blank"
+              rel="noreferrer"
+              className="underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {venueAddress}
+            </a>
+          ) : (
+            <span>{venueAddress}</span>
+          )}
+        </div>
+      ) : null}
+    </div>
+
+    {partnerName ? (
+      <div className="min-w-0 text-right text-neutral-700">
+        <div className="text-xs text-neutral-500">Partner</div>
+        <div className="truncate">{partnerName}</div>
+      </div>
+    ) : null}
+  </div>
+) : null}
+
 
           {/* Flyer* */}
           {event.flyer ? (
