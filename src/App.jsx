@@ -601,7 +601,7 @@ function Shell({
 >
 {/* Row 1: Title + submit link */}
 <div className="px-4 py-3 flex flex-col items-center justify-center border-b border-neutral-200">
-  <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-center text-[#c85f1f]">
+  <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-center text-[#c85f1f]">
     FRESNO MUSIC CALENDAR
   </h1>
 
@@ -616,7 +616,7 @@ function Shell({
       Submit an Event Here
     </a>
   ) : (
-    <span className="mt-1 text-xs text-neutral-500 text-[#c85f1f]">
+    <span className="mt-2 text-m text-bold-500">
       Submit an Event Here
     </span>
   )}
