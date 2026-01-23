@@ -4,6 +4,9 @@ import events from "./data/events.json"
 import venues from "./data/venues.json"
 import partners from "./data/partners.json"
 
+// TODO: replace this with your real Google Form URL (e.g. https://forms.gle/xxxx)
+const SUBMIT_EVENT_URL = "https://forms.gle/REPLACE_ME"
+
 const NAV_ITEMS = [
   { key: "home", label: "Today" },
   { key: "venues", label: "Venues" },
@@ -591,15 +594,29 @@ function Shell({
   className="sticky top-0 z-50 border-b border-neutral-200 bg-[#fffbf7]"
   style={{ position: "sticky", top: 0, zIndex: 50 }}
 >
-  {/* Row 1: Title only */}
-  <div
-    className="h-16 px-4 flex items-center justify-center"
-    style={{ height: 64 }}
-  >
-      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-center">
-        FRESNO MUSIC CALENDAR
-      </h1>
-    </div>
+{/* Row 1: Title + submit link */}
+<div className="px-4 py-3 flex flex-col items-center justify-center border-b border-neutral-200">
+  <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-center">
+    FRESNO MUSIC CALENDAR
+  </h1>
+
+  {/* Submit Event link (small, centered, clean) */}
+  {SUBMIT_EVENT_URL && !SUBMIT_EVENT_URL.includes("REPLACE_ME") ? (
+    <a
+      href={SUBMIT_EVENT_URL}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-1 text-xs text-neutral-600 underline hover:text-neutral-900"
+    >
+      Submit an Event Here
+    </a>
+  ) : (
+    <span className="mt-1 text-xs text-neutral-500">
+      Submit an Event Here
+    </span>
+  )}
+</div>
+
 
     {/* Row 2: Navigation (desktop + mobile variants) */}
   <div
@@ -925,16 +942,28 @@ function Shell({
   <div className="w-full px-4 py-3">{children}</div>
 </main>
 
-        <footer className="border-t border-neutral-200">
-          <div className="w-full px-4 py-5 text-sm text-neutral-600">
-              <p>
-                Send show info or a flyer:{" "}
-                <a className="underline" href="mailto:fresnomusiccalendar@gmail.com">
-                  fresnomusiccalendar@gmail.com
-                </a>
-              </p>
+                <footer className="border-t border-neutral-200">
+          <div className="w-full px-4 py-5 text-sm text-neutral-600 text-center">
+            <p>
+              Contact:{" "}
+              <a className="underline" href="mailto:fresnomusiccalendar@gmail.com">
+                fresnomusiccalendar@gmail.com
+              </a>
+            </p>
+
+            {/* Footer logo (final element) */}
+            <div className="mt-8 flex justify-center">
+              <img
+                src="/logo.png"
+                alt="Fresno Music Calendar"
+                className="h-auto w-[80%] max-w-[18rem]"
+                draggable={false}
+                loading="lazy"
+              />
             </div>
-          </footer>
+          </div>
+        </footer>
+
         </div>
 
         {/* Inert field (right) */}
@@ -1088,34 +1117,61 @@ function VenuesView({ onSelectVenue }) {
         <div className="rounded-xl border border-neutral-200 p-4 text-sm text-neutral-600">
           No venues yet.
         </div>
-      ) : (
+        ) : (
         <div className="space-y-2">
-          {venues.map((v) => (
-            <div
-              key={v.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 p-4"
-            >
-              <button
-                type="button"
-                onClick={() => onSelectVenue(v.id)}
-                className="min-w-0 text-left"
-              >
-                <div className="font-medium">{v.name}</div>
-                <div className="mt-1 text-xs text-neutral-500">Tap to filter events</div>
-              </button>
+          {[...venues]
+            .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
+            .map((v) => {
+              const address = v?.address ? String(v.address) : null
+              const mapLink = v?.mapLink ? String(v.mapLink) : null
 
-              {v.link ? (
-                <a
-                  className="shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-                  href={v.link}
-                  target="_blank"
-                  rel="noreferrer"
+              return (
+                <div
+                  key={v.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 p-4"
                 >
-                  Link
-                </a>
-              ) : null}
-            </div>
-          ))}
+                  <button
+                    type="button"
+                    onClick={() => onSelectVenue(v.id)}
+                    className="min-w-0 text-left"
+                  >
+                    <div className="font-medium">{v.name}</div>
+
+                    {/* Address (optional; no placeholder) */}
+                    {address ? (
+                      <div className="mt-1 text-xs text-neutral-600">
+                        {mapLink ? (
+                          <a
+                            href={mapLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {address}
+                          </a>
+                        ) : (
+                          <span>{address}</span>
+                        )}
+                      </div>
+                    ) : null}
+
+                    <div className="mt-1 text-xs text-neutral-500">Tap to filter events</div>
+                  </button>
+
+                  {v.link ? (
+                    <a
+                      className="shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                      href={v.link}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Link
+                    </a>
+                  ) : null}
+                </div>
+              )
+            })}
         </div>
       )}
     </div>
@@ -1134,32 +1190,34 @@ function PartnersView({ onSelectPartner }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {partners.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 p-4"
-            >
-              <button
-                type="button"
-                onClick={() => onSelectPartner(p.id)}
-                className="min-w-0 text-left"
+          {[...partners]
+            .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
+            .map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 p-4"
               >
-                <div className="font-medium">{p.name}</div>
-                <div className="mt-1 text-xs text-neutral-500">Tap to filter events</div>
-              </button>
-
-              {p.link ? (
-                <a
-                  className="shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-                  href={p.link}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() => onSelectPartner(p.id)}
+                  className="min-w-0 text-left"
                 >
-                  Link
-                </a>
-              ) : null}
-            </div>
-          ))}
+                  <div className="font-medium">{p.name}</div>
+                  <div className="mt-1 text-xs text-neutral-500">Tap to filter events</div>
+                </button>
+
+                {p.link ? (
+                  <a
+                    className="shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                    href={p.link}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Link
+                  </a>
+                ) : null}
+              </div>
+            ))}
         </div>
       )}
     </div>
