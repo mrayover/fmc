@@ -1072,7 +1072,7 @@ const grouped = useMemo(
 return (
   <div className="space-y-2">
     <div className="flex flex-col items-center gap-0">
-      <h2 className="text-base font-medium leading-tight">Today & Upcoming</h2>
+
 
       {filterLabel ? (
         <div className="text-xs text-neutral-500">
