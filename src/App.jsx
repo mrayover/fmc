@@ -215,19 +215,24 @@ function EventCard({ event, isOpen, onToggle }) {
 
   return (
 
-        <article
-      className="rounded-xl border border-neutral-200 p-4 cursor-pointer select-none"
-      onClick={onToggle}
-      role="button"
-      tabIndex={0}
-      aria-expanded={!!isOpen}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault()
-          onToggle?.()
-        }
-      }}
-    >
+<article
+  className={[
+    "rounded-xl border border-neutral-200 p-4 cursor-pointer select-none",
+    "transition-colors duration-200",
+    isOpen ? "bg-[#F9E2CD]" : "bg-white",
+  ].join(" ")}
+  onClick={onToggle}
+  role="button"
+  tabIndex={0}
+  aria-expanded={!!isOpen}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault()
+      onToggle?.()
+    }
+  }}
+>
+
 {/* MOBILE collapsed header row (always visible) */}
 <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 md:hidden">
   <div className="min-w-0">
@@ -596,7 +601,7 @@ function Shell({
 >
 {/* Row 1: Title + submit link */}
 <div className="px-4 py-3 flex flex-col items-center justify-center border-b border-neutral-200">
-  <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-center">
+  <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-center text-[#c85f1f]">
     FRESNO MUSIC CALENDAR
   </h1>
 
@@ -611,7 +616,7 @@ function Shell({
       Submit an Event Here
     </a>
   ) : (
-    <span className="mt-1 text-xs text-neutral-500">
+    <span className="mt-1 text-xs text-neutral-500 text-[#c85f1f]">
       Submit an Event Here
     </span>
   )}
