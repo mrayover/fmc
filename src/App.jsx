@@ -499,7 +499,9 @@ function EventCard({ event, isOpen, onToggle }) {
 }
 
 
-function NavButton({ active, children, onClick }) {
+function NavButton({ active, pill, children, onClick }) {
+  const isPilled = !!pill
+
   return (
     <button
       type="button"
@@ -509,7 +511,7 @@ function NavButton({ active, children, onClick }) {
         "text-sm leading-none",
         "px-3 py-1.5 rounded-full border",
         "transition-colors",
-        active
+        isPilled
           ? "bg-[#F9E2CD] border-neutral-300 font-semibold text-black"
           : "bg-transparent border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-200",
       ].join(" ")}
@@ -518,6 +520,7 @@ function NavButton({ active, children, onClick }) {
     </button>
   )
 }
+
 
 function Shell({
   activeTab,
@@ -543,6 +546,16 @@ function Shell({
 
   const [isGenreOpen, setIsGenreOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // Used to conditionally pill "Today" only when the page is at the top (mobile + desktop)
+  const [isAtTop, setIsAtTop] = useState(true)
+
+  useEffect(() => {
+    const onScroll = () => setIsAtTop(window.scrollY <= 4)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
 
   const mobileMenuRef = useRef(null)
   const mobileGenreRef = useRef(null)
@@ -640,15 +653,19 @@ function Shell({
       <nav className="hidden md:flex w-full items-center justify-between">
         <div className="flex items-center gap-6">
           {/* Today */}
-          <NavButton
-            active={activeTab === "home"}
-            onClick={() => {
-              setJumpDate("")
-              setActiveTab("home")
-            }}
-          >
-            Today
-          </NavButton>
+<NavButton
+  active={activeTab === "home"}
+  pill={activeTab === "home" && isAtTop}
+  onClick={() => {
+    setJumpDate("")
+    setActiveTab("home")
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }}
+>
+  Today
+</NavButton>
+
+
 
           {/* Venues */}
           <NavButton
@@ -766,18 +783,19 @@ className={[
 
         </nav>
 
-      {/* Mobile nav */}
-      <nav className="md:hidden w-full flex items-center justify-between">
+            {/* Mobile nav (3-slot layout: left | center | right) */}
+      <nav className="md:hidden w-full grid grid-cols-3 items-center">
         {/* Left: Menu (dropdown) */}
-        <div className="relative" ref={mobileMenuRef}>
+        <div className="relative justify-self-start" ref={mobileMenuRef}>
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen((v) => !v)}
             className={[
-              "text-sm leading-none px-1 py-1 transition-colors",
+              "text-sm leading-none",
+              "px-3 py-1.5 rounded-full border transition-colors",
               isMobileMenuOpen
-                ? "text-neutral-900"
-                : "text-neutral-500 hover:text-neutral-800",
+                ? "bg-[#F9E2CD] border-neutral-300 font-semibold text-black"
+                : "bg-transparent border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-200",
             ].join(" ")}
           >
             Menu
@@ -819,90 +837,97 @@ className={[
           ) : null}
         </div>
 
-        {/* Middle-left: Today */}
-        <NavButton
-          active={activeTab === "home"}
-          onClick={() => {
-            setJumpDate("")
-            setActiveTab("home")
-          }}
-        >
-          Today
-        </NavButton>
+        {/* Center: Today (always centered; pill only at top) */}
+        <div className="justify-self-center">
+<NavButton
+  active={activeTab === "home"}
+  pill={activeTab === "home" && isAtTop}
+  onClick={() => {
+    setJumpDate("")
+    setActiveTab("home")
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }}
+>
+  Today
+</NavButton>
 
-        {/* Middle-right: Genre (mobile) */}
-        {activeTab === "home" ? (
-          <div className="relative" ref={mobileGenreRef}>
-            <button
-              type="button"
-              onClick={() => setIsGenreOpen((v) => !v)}
-              className={[
-                "text-sm leading-none px-1 py-1 transition-colors",
-                isGenreOpen
-                  ? "text-neutral-900"
-                  : "text-neutral-500 hover:text-neutral-800",
-              ].join(" ")}
-            >
-              Genre
-            </button>
+        </div>
 
-            {isGenreOpen ? (
-              <div className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">Genres</div>
-                  <button
-                    type="button"
-                    className="text-xs underline text-neutral-600"
-                    onClick={toggleAllGenres}
-                  >
-                    All
-                  </button>
+        {/* Right: Genre (or spacer that preserves the right slot width) */}
+        <div className="justify-self-end">
+          {activeTab === "home" ? (
+            <div className="relative" ref={mobileGenreRef}>
+              <button
+                type="button"
+                onClick={() => setIsGenreOpen((v) => !v)}
+                className={[
+                  "text-sm leading-none px-1 py-1 transition-colors",
+                  isGenreOpen
+                    ? "text-neutral-900"
+                    : "text-neutral-500 hover:text-neutral-800",
+                ].join(" ")}
+              >
+                Genre
+              </button>
+
+              {isGenreOpen ? (
+                <div className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">Genres</div>
+                    <button
+                      type="button"
+                      className="text-xs underline text-neutral-600"
+                      onClick={toggleAllGenres}
+                    >
+                      All
+                    </button>
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {GENRES.map((g) => {
+                      const checked = selectedGenres?.has(g)
+                      return (
+                        <label
+                          key={g}
+                          className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={!!checked}
+                            onChange={(e) => {
+                              const on = e.target.checked
+                              setSelectedGenres((prev) => {
+                                const next = new Set(prev || [])
+                                if (on) next.add(g)
+                                else next.delete(g)
+                                return next
+                              })
+                            }}
+                          />
+                          <span className="truncate">{g}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                      onClick={() => setIsGenreOpen(false)}
+                    >
+                      Done
+                    </button>
+                  </div>
                 </div>
-
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  {GENRES.map((g) => {
-                    const checked = selectedGenres?.has(g)
-                    return (
-                      <label
-                        key={g}
-                        className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={!!checked}
-                          onChange={(e) => {
-                            const on = e.target.checked
-                            setSelectedGenres((prev) => {
-                              const next = new Set(prev || [])
-                              if (on) next.add(g)
-                              else next.delete(g)
-                              return next
-                            })
-                          }}
-                        />
-                        <span className="truncate">{g}</span>
-                      </label>
-                    )
-                  })}
-                </div>
-
-                <div className="mt-3 flex justify-end">
-                  <button
-                    type="button"
-                    className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-                    onClick={() => setIsGenreOpen(false)}
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <span />
-        )}
-
+              ) : null}
+            </div>
+          ) : (
+            <span className="inline-block w-12" aria-hidden="true" />
+          )}
+        </div>
       </nav>
+
     </div>
 
 {/* Row 3: Search + Date */}
