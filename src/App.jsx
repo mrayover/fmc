@@ -507,15 +507,18 @@ function NavButton({ active, children, onClick }) {
       aria-current={active ? "page" : undefined}
       className={[
         "text-sm leading-none",
-        "px-1 py-1",
+        "px-3 py-1.5 rounded-full border",
         "transition-colors",
-        active ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-800",
+        active
+          ? "bg-[#F9E2CD] border-neutral-300 font-semibold text-black"
+          : "bg-transparent border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-200",
       ].join(" ")}
     >
       {children}
     </button>
   )
 }
+
 
 
 function Shell({
@@ -669,12 +672,13 @@ function Shell({
               <button
                 type="button"
                 onClick={() => setIsGenreOpen((v) => !v)}
-                className={[
-                  "text-sm leading-none px-1 py-1 transition-colors",
-                  isGenreOpen
-                    ? "text-neutral-900"
-                    : "text-neutral-500 hover:text-neutral-800",
-                ].join(" ")}
+className={[
+  "text-sm leading-none px-3 py-1.5 rounded-full border transition-colors",
+  isGenreOpen
+    ? "bg-[#F9E2CD] border-neutral-300 font-semibold text-black"
+    : "bg-transparent border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-200",
+].join(" ")}
+
               >
                 Genres
               </button>
