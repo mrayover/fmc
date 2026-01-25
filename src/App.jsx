@@ -534,7 +534,7 @@ function Shell({
   setSearchQuery,
   children,
 }) {
-
+  const jumpDateRef = React.useRef(null)
   const navItems = useMemo(() => {
     const items = [...NAV_ITEMS]
     if (import.meta.env.DEV) items.push({ key: "dev", label: "Dev Tools" })
@@ -918,32 +918,60 @@ className={[
     </div>
 
 {/* Row 3: Search + Date */}
-<div
-  className="h-10 px-4 flex items-center gap-3 border-t border-neutral-200"
-  style={{ height: 40 }}
->
-  {/* Search (dominant) */}
+<div className="px-4 py-2 border-t border-neutral-200">
+  <div className="flex items-center gap-3">
+    {/* Search (always dominant) */}
+    <input
+      type="text"
+      value={activeTab === "home" ? searchQuery : ""}
+      onChange={(e) => {
+        if (activeTab === "home") setSearchQuery(e.target.value)
+      }}
+      placeholder="Search Events"
+      disabled={activeTab !== "home"}
+      className="flex-1 min-w-0 rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm
+                 placeholder:text-neutral-400 focus:placeholder-transparent
+                 disabled:opacity-0"
+      aria-label="Search events"
+    />
+
+    {/* Mobile-only: calendar icon + Jump to Date (does NOT steal width) */}
+    <button
+      type="button"
+      className="md:hidden inline-flex items-center gap-2 shrink-0 px-3 py-2 rounded-full border border-neutral-200 bg-white text-sm text-neutral-700"
+      onClick={() => {
+        const el = jumpDateRef.current
+        if (!el) return
+        if (typeof el.showPicker === "function") el.showPicker()
+        else {
+          el.focus()
+          el.click()
+        }
+      }}
+      aria-label="Jump to date"
+      title="Jump to date"
+    >
+      <span aria-hidden>📅</span>
+      <span className="whitespace-nowrap">Jump to Date</span>
+    </button>
+  </div>
+
+  {/* Hidden mobile date input (triggered by button) */}
   <input
-    type="text"
-    value={activeTab === "home" ? searchQuery : ""}
+    ref={jumpDateRef}
+    type="date"
+    value={jumpDate || ""}
     onChange={(e) => {
-      if (activeTab === "home") setSearchQuery(e.target.value)
+      setJumpDate(e.target.value)
+      setActiveTab("home")
     }}
-    placeholder="Search Events"
-    disabled={activeTab !== "home"}
-    className="flex-1 min-w-0 rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm
-               placeholder:text-neutral-400 focus:placeholder-transparent
-               disabled:opacity-0"
-    aria-label="Search events"
+    className="md:hidden absolute left-[-9999px] top-auto w-px h-px opacity-0"
+    aria-hidden="true"
+    tabIndex={-1}
   />
 
-  {/* Mobile-only labeled date control */}
-  <div className="flex items-center gap-2 md:hidden">
-    <span className="flex items-center gap-1 text-xs text-neutral-600 whitespace-nowrap">
-      <span aria-hidden>📅</span>
-      Jump to Date
-    </span>
-
+  {/* Desktop: keep your compact inline date picker (unchanged) */}
+  <div className="hidden md:flex items-center justify-end mt-2">
     <input
       type="date"
       value={jumpDate || ""}
@@ -951,23 +979,13 @@ className={[
         setJumpDate(e.target.value)
         setActiveTab("home")
       }}
-      className="w-[9.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
+      className="w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
       aria-label="Jump to date"
+      title="Jump to date"
     />
   </div>
-
-  {/* Desktop date picker (unchanged behavior) */}
-  <input
-    type="date"
-    value={jumpDate || ""}
-    onChange={(e) => {
-      setJumpDate(e.target.value)
-      setActiveTab("home")
-    }}
-    className="hidden md:block w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
-    aria-label="Jump to date"
-  />
 </div>
+
 
   </header>
 
