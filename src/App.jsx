@@ -902,25 +902,13 @@ className={[
           <span />
         )}
 
-        {/* Right: Date picker (calendar icon acceptable) */}
-        <input
-          type="date"
-          value={jumpDate || ""}
-          onChange={(e) => {
-            setJumpDate(e.target.value)
-            setActiveTab("home")
-          }}
-          className="w-10 text-sm border border-neutral-200 rounded-md px-1 py-1 bg-white"
-          aria-label="Jump to date"
-          title="Jump to date"
-        />
       </nav>
     </div>
 
 {/* Row 3: Search + Date */}
 <div className="px-4 py-2 border-t border-neutral-200">
   <div className="flex items-center gap-3">
-    {/* Search (always dominant) */}
+    {/* Search (dominant on all sizes) */}
     <input
       type="text"
       value={activeTab === "home" ? searchQuery : ""}
@@ -935,7 +923,7 @@ className={[
       aria-label="Search events"
     />
 
-    {/* Mobile-only: calendar icon + Jump to Date (does NOT steal width) */}
+    {/* Mobile-only: calendar icon + Jump to Date */}
     <button
       type="button"
       className="md:hidden inline-flex items-center gap-2 shrink-0 px-3 py-2 rounded-full border border-neutral-200 bg-white text-sm text-neutral-700"
@@ -954,6 +942,19 @@ className={[
       <span aria-hidden>📅</span>
       <span className="whitespace-nowrap">Jump to Date</span>
     </button>
+
+    {/* Desktop-only: date picker stays on this same line */}
+    <input
+      type="date"
+      value={jumpDate || ""}
+      onChange={(e) => {
+        setJumpDate(e.target.value)
+        setActiveTab("home")
+      }}
+      className="hidden md:block w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
+      aria-label="Jump to date"
+      title="Jump to date"
+    />
   </div>
 
   {/* Hidden mobile date input (triggered by button) */}
@@ -969,23 +970,7 @@ className={[
     aria-hidden="true"
     tabIndex={-1}
   />
-
-  {/* Desktop: keep your compact inline date picker (unchanged) */}
-  <div className="hidden md:flex items-center justify-end mt-2">
-    <input
-      type="date"
-      value={jumpDate || ""}
-      onChange={(e) => {
-        setJumpDate(e.target.value)
-        setActiveTab("home")
-      }}
-      className="w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
-      aria-label="Jump to date"
-      title="Jump to date"
-    />
-  </div>
 </div>
-
 
   </header>
 
