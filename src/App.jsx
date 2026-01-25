@@ -559,6 +559,11 @@ function Shell({
 
   const mobileMenuRef = useRef(null)
   const mobileGenreRef = useRef(null)
+  const desktopGenreRef = useRef(null)
+
+  const isGenreFiltered =
+    selectedGenres instanceof Set && selectedGenres.size !== GENRES.length
+
 
 
   function toggleAllGenres() {
@@ -568,7 +573,7 @@ function Shell({
     else resetGenresToAll()
   }
 
-  useEffect(() => {
+    useEffect(() => {
     if (!isMobileMenuOpen && !isGenreOpen) return
 
     function onDocPointerDown(e) {
@@ -582,18 +587,20 @@ function Shell({
         setIsMobileMenuOpen(false)
       }
 
-      if (
-        isGenreOpen &&
-        mobileGenreRef.current &&
-        !mobileGenreRef.current.contains(t)
-      ) {
-        setIsGenreOpen(false)
+      if (isGenreOpen) {
+        const inMobile =
+          mobileGenreRef.current && mobileGenreRef.current.contains(t)
+        const inDesktop =
+          desktopGenreRef.current && desktopGenreRef.current.contains(t)
+
+        if (!inMobile && !inDesktop) setIsGenreOpen(false)
       }
     }
 
     document.addEventListener("pointerdown", onDocPointerDown)
     return () => document.removeEventListener("pointerdown", onDocPointerDown)
   }, [isMobileMenuOpen, isGenreOpen])
+
 
 
   return (
@@ -668,40 +675,42 @@ function Shell({
 
 
           {/* Venues */}
-          <NavButton
-            active={activeTab === "venues"}
-            onClick={() => setActiveTab("venues")}
-          >
-            Venues
-          </NavButton>
+<NavButton
+  active={activeTab === "venues"}
+  pill={activeTab === "venues"}
+  onClick={() => setActiveTab("venues")}
+>
+  Venues
+</NavButton>
 
-          {/* Partners */}
-          <NavButton
-            active={activeTab === "partners"}
-            onClick={() => setActiveTab("partners")}
-          >
-            Partners
-          </NavButton>
+{/* Partners */}
+<NavButton
+  active={activeTab === "partners"}
+  pill={activeTab === "partners"}
+  onClick={() => setActiveTab("partners")}
+>
+  Partners
+</NavButton>
 
           {/* Genres (desktop) */}
-          {activeTab === "home" ? (
-            <div className="relative">
+                    {activeTab === "home" ? (
+            <div className="relative" ref={desktopGenreRef}>
               <button
                 type="button"
                 onClick={() => setIsGenreOpen((v) => !v)}
-className={[
-  "text-sm leading-none px-3 py-1.5 rounded-full border transition-colors",
-  isGenreOpen
-    ? "bg-[#F9E2CD] border-neutral-300 font-semibold text-black"
-    : "bg-transparent border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-200",
-].join(" ")}
-
+                className={[
+                  "text-sm leading-none px-3 py-1.5 rounded-full border transition-colors",
+                  (isGenreOpen || isGenreFiltered)
+                    ? "bg-[#F9E2CD] border-neutral-300 font-semibold text-black"
+                    : "bg-transparent border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-200",
+                ].join(" ")}
               >
                 Genres
               </button>
 
               {isGenreOpen ? (
                 <div className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
+
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-medium">Genres</div>
                     <button
@@ -755,30 +764,33 @@ className={[
           ) : null}
 
           {/* About */}
-          <NavButton
-            active={activeTab === "about"}
-            onClick={() => setActiveTab("about")}
-          >
-            About
-          </NavButton>
+<NavButton
+  active={activeTab === "about"}
+  pill={activeTab === "about"}
+  onClick={() => setActiveTab("about")}
+>
+  About
+</NavButton>
 
-          {/* Contact */}
-          <NavButton
-            active={activeTab === "contact"}
-            onClick={() => setActiveTab("contact")}
-          >
-            Contact
-          </NavButton>
+{/* Contact */}
+<NavButton
+  active={activeTab === "contact"}
+  pill={activeTab === "contact"}
+  onClick={() => setActiveTab("contact")}
+>
+  Contact
+</NavButton>
 
-          {/* Dev Tools (desktop, optional) */}
-          {import.meta.env.DEV ? (
-            <NavButton
-              active={activeTab === "dev"}
-              onClick={() => setActiveTab("dev")}
-            >
-              Dev Tools
-            </NavButton>
-          ) : null}
+{/* Dev Tools (desktop, optional) */}
+{import.meta.env.DEV ? (
+  <NavButton
+    active={activeTab === "dev"}
+    pill={activeTab === "dev"}
+    onClick={() => setActiveTab("dev")}
+  >
+    Dev Tools
+  </NavButton>
+) : null}
         </div>
 
         </nav>
@@ -857,18 +869,19 @@ className={[
         <div className="justify-self-end">
           {activeTab === "home" ? (
             <div className="relative" ref={mobileGenreRef}>
-              <button
+                            <button
                 type="button"
                 onClick={() => setIsGenreOpen((v) => !v)}
                 className={[
-                  "text-sm leading-none px-1 py-1 transition-colors",
-                  isGenreOpen
-                    ? "text-neutral-900"
-                    : "text-neutral-500 hover:text-neutral-800",
+                  "text-sm leading-none px-3 py-1.5 rounded-full border transition-colors",
+                  (isGenreOpen || isGenreFiltered)
+                    ? "bg-[#F9E2CD] border-neutral-300 font-semibold text-black"
+                    : "bg-transparent border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-200",
                 ].join(" ")}
               >
                 Genre
               </button>
+
 
               {isGenreOpen ? (
                 <div className="absolute right-0 z-30 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
