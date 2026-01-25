@@ -764,18 +764,7 @@ className={[
           ) : null}
         </div>
 
-        {/* Date picker (desktop) */}
-        <input
-          type="date"
-          value={jumpDate || ""}
-          onChange={(e) => {
-            setJumpDate(e.target.value)
-            setActiveTab("home")
-          }}
-          className="text-sm border border-neutral-200 rounded-md px-2 py-1 bg-white"
-          aria-label="Jump to date"
-        />
-      </nav>
+        </nav>
 
       {/* Mobile nav */}
       <nav className="md:hidden w-full flex items-center justify-between">
@@ -928,26 +917,40 @@ className={[
       </nav>
     </div>
 
-    {/* Row 3: Search input only */}
-  <div
-    className="h-10 px-4 flex items-center border-t border-neutral-200"
-    style={{ height: 40 }}
-  >
-<input
-  type="text"
-  value={activeTab === "home" ? searchQuery : ""}
-  onChange={(e) => {
-    if (activeTab === "home") setSearchQuery(e.target.value)
-  }}
-  placeholder="Search Events"
-  disabled={activeTab !== "home"}
-  className="w-full rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm
-             placeholder:text-neutral-400 focus:placeholder-transparent
-             disabled:opacity-0"
-  aria-label="Search events"
-/>
+    {/* Row 3: Search + Date */}
+<div
+  className="h-10 px-4 flex items-center gap-3 border-t border-neutral-200"
+  style={{ height: 40 }}
+>
+  {/* Search (dominant) */}
+  <input
+    type="text"
+    value={activeTab === "home" ? searchQuery : ""}
+    onChange={(e) => {
+      if (activeTab === "home") setSearchQuery(e.target.value)
+    }}
+    placeholder="Search Events"
+    disabled={activeTab !== "home"}
+    className="flex-1 min-w-0 rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm
+               placeholder:text-neutral-400 focus:placeholder-transparent
+               disabled:opacity-0"
+    aria-label="Search events"
+  />
 
-    </div>
+  {/* Date picker (compact, consistent) */}
+  <input
+    type="date"
+    value={jumpDate || ""}
+    onChange={(e) => {
+      setJumpDate(e.target.value)
+      setActiveTab("home")
+    }}
+    className="w-[9.5rem] md:w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
+    aria-label="Jump to date"
+    title="Jump to date"
+  />
+</div>
+
   </header>
 
 
