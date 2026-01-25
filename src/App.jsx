@@ -43,13 +43,16 @@ function formatDateLabel(dateInput) {
 
   const [y, m, d] = yyyyMmDd.split("-").map(Number)
   const dt = new Date(y, m - 1, d)
-  return dt.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  })
-}
 
+  const weekday = dt.toLocaleDateString(undefined, { weekday: "long" })
+  const rest = dt.toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  })
+
+  return `${weekday} - ${rest}`
+}
 
 function parseTimeToMinutes(timeStr) {
   // Accepts formats like "7:00 PM", "7 PM", "19:00"
@@ -160,14 +163,16 @@ function DateGroup({ date, children }) {
   return (
     <section id={`date-${key}`} className="space-y-2">
       <div className="mb-2 flex justify-center">
-        <h3 className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm font-medium">
-          {formatDateLabel(date)}
-        </h3>
+<h3 className="w-full text-center bg-[#b87333] px-4 py-3 text-lg font-bold uppercase tracking-wide text-[#f3efeb]">
+  {formatDateLabel(date)}
+</h3>
+
       </div>
       <div className="space-y-2">{children}</div>
     </section>
   )
 }
+
 function TruncateWithTitle({ text, className = "" }) {
   const ref = useRef(null)
   const [isTruncated, setIsTruncated] = useState(false)
@@ -959,7 +964,7 @@ function Shell({
             {/* Footer logo (final element) */}
             <div className="mt-8 flex justify-center">
               <img
-                src="/logo.png"
+                src="/fmc-logo.svg"
                 alt="Fresno Music Calendar"
                 className="h-auto w-[80%] max-w-[18rem]"
                 draggable={false}
