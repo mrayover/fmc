@@ -917,7 +917,7 @@ className={[
       </nav>
     </div>
 
-    {/* Row 3: Search + Date */}
+{/* Row 3: Search + Date */}
 <div
   className="h-10 px-4 flex items-center gap-3 border-t border-neutral-200"
   style={{ height: 40 }}
@@ -937,7 +937,26 @@ className={[
     aria-label="Search events"
   />
 
-  {/* Date picker (compact, consistent) */}
+  {/* Mobile-only labeled date control */}
+  <div className="flex items-center gap-2 md:hidden">
+    <span className="flex items-center gap-1 text-xs text-neutral-600 whitespace-nowrap">
+      <span aria-hidden>📅</span>
+      Jump to Date
+    </span>
+
+    <input
+      type="date"
+      value={jumpDate || ""}
+      onChange={(e) => {
+        setJumpDate(e.target.value)
+        setActiveTab("home")
+      }}
+      className="w-[9.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
+      aria-label="Jump to date"
+    />
+  </div>
+
+  {/* Desktop date picker (unchanged behavior) */}
   <input
     type="date"
     value={jumpDate || ""}
@@ -945,9 +964,8 @@ className={[
       setJumpDate(e.target.value)
       setActiveTab("home")
     }}
-    className="w-[9.5rem] md:w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
+    className="hidden md:block w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
     aria-label="Jump to date"
-    title="Jump to date"
   />
 </div>
 
