@@ -519,8 +519,6 @@ function NavButton({ active, children, onClick }) {
   )
 }
 
-
-
 function Shell({
   activeTab,
   setActiveTab,
@@ -534,12 +532,14 @@ function Shell({
   setSearchQuery,
   children,
 }) {
-  const jumpDateRef = React.useRef(null)
+  const jumpDateRef = useRef(null)
+
   const navItems = useMemo(() => {
     const items = [...NAV_ITEMS]
     if (import.meta.env.DEV) items.push({ key: "dev", label: "Dev Tools" })
     return items
   }, [])
+
 
   const [isGenreOpen, setIsGenreOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
