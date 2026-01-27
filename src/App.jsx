@@ -5,7 +5,9 @@ import venues from "./data/venues.json"
 import partners from "./data/partners.json"
 
 // TODO: replace this with your real Google Form URL (e.g. https://forms.gle/xxxx)
-const SUBMIT_EVENT_URL = "https://forms.gle/REPLACE_ME"
+const SUBMIT_EVENT_URL = "https://forms.gle/Kn7VYjzyJfJF6iaE8"
+
+const CONTACT_EMAIL = "fresnomusiccalendar@gmail.com"
 
 const NAV_ITEMS = [
   { key: "home", label: "Today" },
@@ -200,7 +202,13 @@ function TruncateWithTitle({ text, className = "" }) {
 
 function EventCard({ event, isOpen, onToggle }) {
   const venue = getVenueById(event.venueId)
-  const href = event.link || venue?.link || null
+  const href =
+    event.link ||
+    venue?.website ||
+    venue?.socialUrl ||
+    venue?.link || // legacy fallback (safe while transitioning)
+    null
+
 
   const partnerName = (() => {
     const ids = Array.isArray(event.partnerIds) ? event.partnerIds : []
@@ -533,8 +541,11 @@ function Shell({
   clearGenres,
   searchQuery,
   setSearchQuery,
+  venueSearchQuery,
+  setVenueSearchQuery,
   children,
 }) {
+
   const jumpDateRef = useRef(null)
 
   const navItems = useMemo(() => {
@@ -945,70 +956,84 @@ function Shell({
 
 {/* Row 3: Search + Date */}
 <div className="px-4 py-2 border-t border-neutral-200">
-  <div className="flex items-center gap-3">
-    {/* Search (dominant on all sizes) */}
-    <input
-      type="text"
-      value={activeTab === "home" ? searchQuery : ""}
-      onChange={(e) => {
-        if (activeTab === "home") setSearchQuery(e.target.value)
-      }}
-      placeholder="Search Events"
-      disabled={activeTab !== "home"}
-      className="flex-1 min-w-0 rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm
-                 placeholder:text-neutral-400 focus:placeholder-transparent
-                 disabled:opacity-0"
-      aria-label="Search events"
-    />
-
-    {/* Mobile-only: calendar icon + Jump to Date */}
-    <button
-      type="button"
-      className="md:hidden inline-flex items-center gap-2 shrink-0 px-3 py-2 rounded-full border border-neutral-200 bg-white text-sm text-neutral-700"
-      onClick={() => {
-        const el = jumpDateRef.current
-        if (!el) return
-        if (typeof el.showPicker === "function") el.showPicker()
-        else {
-          el.focus()
-          el.click()
+  {activeTab === "home" || activeTab === "venues" ? (
+    <div className="flex items-center gap-3">
+      {/* Search (Home + Venues only) */}
+      <input
+        type="text"
+        value={
+          activeTab === "home"
+            ? searchQuery
+            : (venueSearchQuery || "")
         }
-      }}
-      aria-label="Jump to date"
-      title="Jump to date"
-    >
-      <span aria-hidden>📅</span>
-      <span className="whitespace-nowrap">Jump to Date</span>
-    </button>
+        onChange={(e) => {
+          if (activeTab === "home") setSearchQuery(e.target.value)
+          if (activeTab === "venues") setVenueSearchQuery(e.target.value)
+        }}
+        placeholder={activeTab === "venues" ? "Search Venues" : "Search Events"}
+        className="flex-1 min-w-0 rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm
+                   placeholder:text-neutral-400 focus:placeholder-transparent"
+        aria-label={activeTab === "venues" ? "Search venues" : "Search events"}
+      />
 
-    {/* Desktop-only: date picker stays on this same line */}
+      {/* Date picker (Home only) */}
+      {activeTab === "home" ? (
+        <>
+          {/* Mobile-only: calendar icon + Jump to Date */}
+          <button
+            type="button"
+            className="md:hidden inline-flex items-center gap-2 shrink-0 px-3 py-2 rounded-full border border-neutral-200 bg-white text-sm text-neutral-700"
+            onClick={() => {
+              const el = jumpDateRef.current
+              if (!el) return
+              if (typeof el.showPicker === "function") el.showPicker()
+              else {
+                el.focus()
+                el.click()
+              }
+            }}
+            aria-label="Jump to date"
+            title="Jump to date"
+          >
+            <span aria-hidden>📅</span>
+            <span className="whitespace-nowrap">Jump to Date</span>
+          </button>
+
+          {/* Desktop-only: date picker */}
+          <input
+            type="date"
+            value={jumpDate || ""}
+            onChange={(e) => {
+              setJumpDate(e.target.value)
+              setActiveTab("home")
+            }}
+            className="hidden md:block w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
+            aria-label="Jump to date"
+            title="Jump to date"
+          />
+        </>
+      ) : null}
+    </div>
+  ) : null}
+
+  {/* Hidden mobile date input (Home only) */}
+  {activeTab === "home" ? (
     <input
+      ref={jumpDateRef}
       type="date"
       value={jumpDate || ""}
       onChange={(e) => {
         setJumpDate(e.target.value)
         setActiveTab("home")
       }}
-      className="hidden md:block w-[10.5rem] text-sm border border-neutral-200 rounded-md px-2 py-2 bg-white"
-      aria-label="Jump to date"
-      title="Jump to date"
+      className="md:hidden absolute left-[-9999px] top-auto w-px h-px opacity-0"
+      aria-hidden="true"
+      tabIndex={-1}
     />
-  </div>
-
-  {/* Hidden mobile date input (triggered by button) */}
-  <input
-    ref={jumpDateRef}
-    type="date"
-    value={jumpDate || ""}
-    onChange={(e) => {
-      setJumpDate(e.target.value)
-      setActiveTab("home")
-    }}
-    className="md:hidden absolute left-[-9999px] top-auto w-px h-px opacity-0"
-    aria-hidden="true"
-    tabIndex={-1}
-  />
+  ) : null}
 </div>
+
+
 
   </header>
 
@@ -1020,12 +1045,12 @@ function Shell({
 
                 <footer className="border-t border-neutral-200">
           <div className="w-full px-4 py-5 text-sm text-neutral-600 text-center">
-            <p>
-              Contact:{" "}
-              <a className="underline" href="mailto:fresnomusiccalendar@gmail.com">
-                fresnomusiccalendar@gmail.com
-              </a>
-            </p>
+<p>
+  Contact:{" "}
+  <a className="underline" href={`mailto:${CONTACT_EMAIL}`}>
+    {CONTACT_EMAIL}
+  </a>
+</p>
 
             {/* Footer logo (final element) */}
             <div className="mt-8 flex justify-center">
@@ -1184,10 +1209,21 @@ return (
 }
 
 
-function VenuesView({ onSelectVenue }) {
+function VenuesView({ onSelectVenue, venueSearchQuery }) {
+  const q = String(venueSearchQuery || "").trim().toLowerCase()
+
+  const visibleVenues = useMemo(() => {
+    const sorted = [...venues].sort((a, b) =>
+      String(a?.name || "").localeCompare(String(b?.name || ""))
+    )
+    if (!q) return sorted
+    return sorted.filter((v) => String(v?.name || "").toLowerCase().includes(q))
+  }, [q])
+
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">Venues</h2>
+
 
       {venues.length === 0 ? (
         <div className="rounded-xl border border-neutral-200 p-4 text-sm text-neutral-600">
@@ -1195,9 +1231,7 @@ function VenuesView({ onSelectVenue }) {
         </div>
         ) : (
         <div className="space-y-2">
-          {[...venues]
-            .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
-            .map((v) => {
+            {visibleVenues.map((v) => {
               const address = v?.address ? String(v.address) : null
               const mapLink = v?.mapLink ? String(v.mapLink) : null
 
@@ -1235,16 +1269,60 @@ function VenuesView({ onSelectVenue }) {
                     <div className="mt-1 text-xs text-neutral-500">Tap to filter events</div>
                   </button>
 
-                  {v.link ? (
-                    <a
-                      className="shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-                      href={v.link}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Link
-                    </a>
-                  ) : null}
+                  {(() => {
+                    const websiteHref = v?.website || v?.link || null // legacy safe
+                    const socialHref = v?.socialUrl || null
+                    const socialLabel =
+                      v?.socialType === "fb" ? "FB" :
+                      v?.socialType === "ig" ? "IG" :
+                      ""
+
+                    return (
+                      <div className="shrink-0 flex items-center gap-2">
+                        {/* Slot A: Website (fixed width, doesn’t collapse) */}
+                        {websiteHref ? (
+                          <a
+                            className="inline-flex w-[6.5rem] justify-center rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                            href={websiteHref}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Website
+                          </a>
+                        ) : (
+                          <span
+                            className="inline-flex w-[6.5rem] justify-center rounded-full border border-transparent px-3 py-1.5 text-sm opacity-0"
+                            aria-hidden="true"
+                          >
+                            Website
+                          </span>
+                        )}
+
+                        {/* Slot B: Social pill (fixed width, doesn’t collapse) */}
+                        {socialHref ? (
+                          <a
+                            className="inline-flex w-[3.5rem] justify-center rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                            href={socialHref}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={socialLabel ? `Social: ${socialLabel}` : "Social"}
+                          >
+                            {socialLabel || "Social"}
+                          </a>
+                        ) : (
+                          <span
+                            className="inline-flex w-[3.5rem] justify-center rounded-full border border-transparent px-3 py-1.5 text-sm opacity-0"
+                            aria-hidden="true"
+                          >
+                            IG
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })()}
+
                 </div>
               )
             })}
@@ -1269,6 +1347,7 @@ function PartnersView({ onSelectPartner }) {
           {[...partners]
             .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
             .map((p) => (
+
               <div
                 key={p.id}
                 className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 p-4"
@@ -1318,25 +1397,55 @@ function AboutView() {
   )
 }
 function ContactView() {
+  const actions = [
+    {
+      title: "Submit a correction to an event",
+      when: "Use this if an event listing has incorrect or outdated information.",
+      subject: "Event Correction – Fresno Music Calendar",
+    },
+    {
+      title: "Request to add your venue",
+      when: "Use this if you operate a venue and want it included for future event listings.",
+      subject: "Venue Addition Request – Fresno Music Calendar",
+    },
+    {
+      title: "Request to become a partner",
+      when: "Use this for partnerships, presenters, or organizations interested in collaborating.",
+      subject: "Partnership Inquiry – Fresno Music Calendar",
+    },
+    {
+      title: "General inquiries",
+      when: "Use this for questions that don’t fit the categories above.",
+      subject: "General Inquiry – Fresno Music Calendar",
+    },
+  ]
+
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">Contact</h2>
-      <div className="space-y-2 text-sm text-neutral-700 leading-relaxed">
-        <p>
-          For corrections, venue updates, partnerships, or anything else:
-        </p>
-        <p>
-          <a
-            className="underline"
-            href="mailto:fresnomusiccalendar@gmail.com"
-          >
-            fresnomusiccalendar@gmail.com
-          </a>
-        </p>
+
+      <div className="space-y-3 text-sm text-neutral-700 leading-relaxed">
+        {actions.map((a) => {
+          const href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(a.subject)}`
+          return (
+            <div key={a.subject} className="rounded-xl border border-neutral-200 p-4 bg-white">
+              <div className="font-medium text-neutral-900">{a.title}</div>
+              <div className="mt-1 text-sm text-neutral-700">{a.when}</div>
+              <div className="mt-2">
+                <a className="underline" href={href}>
+                  Email: {a.subject}
+                </a>
+              </div>
+            </div>
+          )
+        })}
+
+
       </div>
     </div>
   )
 }
+
 function DevToolsView() {
   const API = "http://localhost:8787"
 
@@ -1364,7 +1473,9 @@ function DevToolsView() {
   const [venueDraft, setVenueDraft] = useState({
     id: "",
     name: "",
-    link: "",
+    website: "",
+    socialType: "ig", // default pill choice
+    socialUrl: "",
     address: "",
     mapLink: "",
   })
@@ -1582,10 +1693,13 @@ function DevToolsView() {
       const payload = {
         id: venueDraft.id.trim(),
         name: venueDraft.name.trim(),
-        link: venueDraft.link.trim(),
-        address: venueDraft.address.trim(),
-        mapLink: venueDraft.mapLink.trim(),
+        website: venueDraft.website.trim() || null,
+        socialType: (venueDraft.socialType || "").trim() || null,
+        socialUrl: venueDraft.socialUrl.trim() || null,
+        address: venueDraft.address.trim() || null,
+        mapLink: venueDraft.mapLink.trim() || null,
       }
+
 
       const res = await fetch(`${API}/api/venues/add`, {
         method: "POST",
@@ -1598,7 +1712,9 @@ function DevToolsView() {
       setVenueDraft({
         id: "",
         name: "",
-        link: "",
+        website: "",
+        socialType: "ig",
+        socialUrl: "",
         address: "",
         mapLink: "",
       })
@@ -1661,14 +1777,6 @@ function DevToolsView() {
         <h3 className="font-medium">Add Event (writes to disk)</h3>
 
         <div className="grid gap-3">
-          <div>
-            <label className="text-sm font-medium">Title</label>
-            <input
-              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              value={eventDraft.title}
-              onChange={(e) => setEventDraft((d) => ({ ...d, title: e.target.value }))}
-            />
-          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -1906,13 +2014,39 @@ function DevToolsView() {
           </div>
 
           <div>
-            <label className="text-sm font-medium">link</label>
+            <label className="text-sm font-medium">website</label>
             <input
               className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              value={venueDraft.link}
-              onChange={(e) => setVenueDraft((d) => ({ ...d, link: e.target.value }))}
+              value={venueDraft.website}
+              onChange={(e) => setVenueDraft((d) => ({ ...d, website: e.target.value }))}
+              placeholder="https://..."
             />
           </div>
+
+          <div className="grid grid-cols-[7rem_1fr] gap-3">
+            <div>
+              <label className="text-sm font-medium">social</label>
+              <select
+                className="mt-1 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+                value={venueDraft.socialType}
+                onChange={(e) => setVenueDraft((d) => ({ ...d, socialType: e.target.value }))}
+              >
+                <option value="ig">IG</option>
+                <option value="fb">FB</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">social url</label>
+              <input
+                className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                value={venueDraft.socialUrl}
+                onChange={(e) => setVenueDraft((d) => ({ ...d, socialUrl: e.target.value }))}
+                placeholder="https://instagram.com/... or https://facebook.com/..."
+              />
+            </div>
+          </div>
+
 
           <div>
             <label className="text-sm font-medium">address</label>
@@ -2033,6 +2167,8 @@ export default function App() {
   const [jumpDate, setJumpDate] = useState("")
   const [selectedGenres, setSelectedGenres] = useState(() => new Set(GENRES))
   const [searchQuery, setSearchQuery] = useState("")
+  const [venueSearchQuery, setVenueSearchQuery] = useState("")
+
 
   function resetGenresToAll() {
     setSelectedGenres(new Set(GENRES))
@@ -2072,7 +2208,10 @@ const setActiveTabWrapped = (key) => {
       clearGenres={clearGenres}
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
+      venueSearchQuery={venueSearchQuery}
+      setVenueSearchQuery={setVenueSearchQuery}
     >
+
 
 
       {activeTab === "home" && (
@@ -2100,9 +2239,11 @@ const setActiveTabWrapped = (key) => {
 
       {activeTab === "venues" && (
         <VenuesView
+          venueSearchQuery={venueSearchQuery}
           onSelectVenue={(venueId) => goHomeWithFilter({ type: "venue", id: venueId })}
         />
       )}
+
 
       {activeTab === "partners" && (
         <PartnersView

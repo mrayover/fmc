@@ -66,6 +66,12 @@ function normalizeOptionalString(x) {
   return s.length ? s : null
 }
 
+function normalizeSocialType(x) {
+  const s = normalizeString(x).toLowerCase()
+  if (s === "ig" || s === "fb") return s
+  return null
+}
+
 function normalizePartnerIds(x) {
   if (!Array.isArray(x)) return []
   return x.map((v) => normalizeString(v)).filter(Boolean)
@@ -316,26 +322,55 @@ const server = http.createServer(async (req, res) => {
 
 
 
-    // Add Venue
+   // Add Venue
   if (req.method === "POST" && (req.url === "/api/venues" || req.url === "/api/venues/add")) {
     const body = await readBodyJson(req)
     if (!body) return bad(res, "Invalid JSON")
 
     const id = normalizeString(body.id)
     const name = normalizeString(body.name)
-    const link = normalizeString(body.link)
 
-    if (!id || !name || !link) {
-      return bad(res, "Missing required fields: id, name, link")
+    // New fields (all optional, but at least one outbound link is required)
+    const website = normalizeOptionalString(body.website)
+    const socialType = normalizeSocialType(body.socialType)
+    const socialUrl = normalizeOptionalString(body.socialUrl)
+
+    // Keep these (already used elsewhere in UI)
+    const address = normalizeOptionalString(body.address)
+    const mapLink = normalizeOptionalString(body.mapLink)
+
+    if (!id || !name) {
+      return bad(res, "Missing required fields: id, name")
+    }
+
+    // Require at least one outbound presence link
+    if (!website && !socialUrl) {
+      return bad(res, "Missing required fields: website OR socialUrl")
+    }
+
+    // If someone provides a socialUrl, they must pick ig/fb
+    if (socialUrl && !socialType) {
+      return bad(res, "Missing required field: socialType (ig or fb) when socialUrl is provided")
+    }
+
+    const nextVenue = {
+      id,
+      name,
+      website,
+      socialType,
+      socialUrl,
+      address,
+      mapLink,
     }
 
     const existing = await readJsonArray(VENUES_PATH)
     const withoutDup = existing.filter((v) => normalizeString(v.id) !== id)
-    const next = [{ id, name, link }, ...withoutDup]
+    const next = [nextVenue, ...withoutDup]
 
     await writeJsonArray(VENUES_PATH, next)
     return send(res, 200, { ok: true, data: next })
   }
+
 
   // Add Partner
   if (req.method === "POST" && (req.url === "/api/partners" || req.url === "/api/partners/add")) {

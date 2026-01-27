@@ -1,23 +1,281 @@
 [
   {
-    "id": "goldsteins",
-    "name": "Goldstein's Mortuary & Delicatessen",
-    "link": "https://www.instagram.com/goldsteinsbeer/",
-    "address": "1279 N Wishon Ave, Fresno, CA 93728",
-    "mapLink": "https://maps.app.goo.gl/pZ4RexcaxVbYQHCr5"
+    "id": "warnors",
+    "name": "Warnor's Theatre",
+    "website": "https://warnorscenter.org/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/warnorscentervenues/?hl=en",
+    "address": "1400 Fulton St, Fresno, CA 93721",
+    "mapLink": "https://share.google/0JzMau5GzhuXrGzau"
+  },
+  {
+    "id": "UP",
+    "name": "University Presbyterian",
+    "website": "https://www.towertheatrefresno.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/tower_theatre/?hl=en",
+    "address": "815 E Olive Ave, Fresno, CA 93728",
+    "mapLink": "https://share.google/6G5ITxSR1BU9xkHlZ"
+  },
+  {
+    "id": "tower theatre",
+    "name": "Tower Theatre",
+    "website": "https://www.towertheatrefresno.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/tower_theatre/?hl=en",
+    "address": "815 E Olive Ave, Fresno, CA 93728",
+    "mapLink": "https://share.google/6G5ITxSR1BU9xkHlZ"
+  },
+  {
+    "id": "TSBG",
+    "name": "Tioga-Sequoia Beer Garden",
+    "website": "https://tiogasequoia.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/tiogasequoia/?hl=en",
+    "address": "745 Fulton St, Fresno, CA 93721",
+    "mapLink": "https://share.google/Y8qJEtvbkYnNaJAD5"
+  },
+  {
+    "id": "red room",
+    "name": "The Red Room",
+    "website": "https://www.redroomfresno.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/redroomfresno/?hl=en",
+    "address": "2257 W Shaw Ave, Fresno, CA 93711",
+    "mapLink": "https://share.google/wTyq65h0mqRiitAr3"
+  },
+  {
+    "id": "thelayover",
+    "name": "The Layover",
+    "website": "https://thelayoverfresno.com/",
+    "socialType": "ig",
+    "socialUrl": "instagram.com/thelayover.ig/?hl=en",
+    "address": "1243 Fulton St, Fresno, CA 93721",
+    "mapLink": "https://share.google/qyEBHWcPKIEhGsAwV"
+  },
+  {
+    "id": "tgr",
+    "name": "The Great Room",
+    "website": null,
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/greatroom_fresno/?hl=en",
+    "address": "1776 E Roberts Ave, Fresno, CA 93710",
+    "mapLink": "https://share.google/HNPPNqf0pZ0Yarbmd"
+  },
+  {
+    "id": "thegrand",
+    "name": "The Grand 1401",
+    "website": "https://thegrand1401.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/accounts/login/?next=%2Fthegrand1401%2F&source=omni_redirect&hl=en",
+    "address": "1401 Fulton St Ste 212, Fresno, CA 93721",
+    "mapLink": "https://share.google/DQ2c0HeupmQwQRQsY"
+  },
+  {
+    "id": "tnc",
+    "name": "Tap & Cellar",
+    "website": "https://thetapandcellar.com/",
+    "socialType": "ig",
+    "socialUrl": "instagram.com/tapandcellar",
+    "address": "317 W Bedford Ave #101, Fresno, CA 93711",
+    "mapLink": "https://share.google/CsTjEm2yae2cOQUIq"
+  },
+  {
+    "id": "sf - t",
+    "name": "Summer Fox Brewing - Tower",
+    "website": "https://summerfoxbrewing.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/summerfoxtowerdistrict/?hl=en",
+    "address": "1426 N Van Ness Ave, Fresno, CA 93728",
+    "mapLink": "https://share.google/WLQruoSLpzyhf0Eje"
+  },
+  {
+    "id": "SF - SF",
+    "name": "Summer Fox Brewing - Santa Fe",
+    "website": "https://summerfoxbrewing.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/summerfoxbrewing/?hl=en",
+    "address": "6585 N Santa Fe Ave, Fresno, CA 93722",
+    "mapLink": "https://share.google/BqfRjmBKvRTVYJr7W"
   },
   {
     "id": "strummers",
-    "name": "Strummer’s",
-    "link": "https://www.instagram.com/strummersfresno/",
+    "name": "Strummer's Bar & Grill",
+    "website": "https://www.strummersclub.com/i6xjbu3x6xqek2mk4umd9vljgkblbt",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/strummersfresno",
     "address": "833 E Fern Ave, Fresno, CA 93728",
-    "mapLink": "https://maps.app.goo.gl/mLmob9FJ9VZVSnYa6"
+    "mapLink": "https://share.google/5T9hc8sp3qAOzKhfI"
   },
   {
-    "id": "fulton55",
+    "id": "starving artists",
+    "name": "Starving Artists Bistro",
+    "website": "https://starvingartistsbistro.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/starvingartistsbistro/?hl=en",
+    "address": "9447 N Fort Washington Rd #101, Fresno, CA 93730",
+    "mapLink": "https://share.google/lHkuEARg9kgnW0rLy"
+  },
+  {
+    "id": "selland",
+    "name": "Selland Arena",
+    "website": "https://www.fresnoconventioncenter.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/explore/locations/1247787/selland-arena/",
+    "address": "700 M St, Fresno, CA 93721",
+    "mapLink": "https://share.google/Q3j86bTqg80JZCUbF"
+  },
+  {
+    "id": "saroyan",
+    "name": "Saroyan Theatre",
+    "website": "https://www.fresnoconventioncenter.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/explore/locations/288661560/william-saroyan-theatre-fresno-convention-entertainment-center/",
+    "address": "730 M St, Fresno, CA 93721",
+    "mapLink": "https://share.google/gn7heHGGIgGzBqf17"
+  },
+  {
+    "id": "sanctuary",
+    "name": "Sanctuary",
+    "website": "https://sanctuaryfresno.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/sanctuaryfresno/",
+    "address": "712 Fulton St, Fresno, CA 93721",
+    "mapLink": "https://share.google/ASwRycFrDsbHHkazj"
+  },
+  {
+    "id": "Rotary Amphitheater",
+    "name": "Rotary Amphitheater",
+    "website": "https://parcsonline.fresno.gov/webtrac/web/iteminfo.html?Module=FR&FMID=489885&__ncforminfo=4EXmqs7tMcUa4LpZ4HcnsFvFW1HymCry3OTZT90-xNgfLQkwbPqM9vosnCBHhjwdBF7AEkMA_9s8swYqYV3oIDTqW2IqK0iuFBhUm9M5z6B1JzOJHwm1MA==",
+    "socialType": "ig",
+    "socialUrl": null,
+    "address": "7775 N Friant Rd, Fresno, CA 93720",
+    "mapLink": "https://share.google/SRGRWd8lKH0mLYeqy"
+  },
+  {
+    "id": "Rainbow",
+    "name": "Rainbow Ballroom",
+    "website": "https://www.rainbowballroom.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/rainbowballroomofficial/?hl=en",
+    "address": "1725 Broadway St, Fresno, CA 93721",
+    "mapLink": "https://share.google/M87FIGvQmXraynG1Z"
+  },
+  {
+    "id": "Paul Shaghoian",
+    "name": "Paul Shaghoian Memorial Concert Hall",
+    "website": null,
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/explore/locations/1025928585/paul-shaghoian-concert-hall/",
+    "address": "2770 E International Ave, Fresno, CA 93730",
+    "mapLink": "https://share.google/TiSva1ditj9S9Or0c"
+  },
+  {
+    "id": "onarollsushi",
+    "name": "On a Roll Sushi",
+    "website": null,
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/onarollsushi559/?hl=en",
+    "address": "1306 Van Ness Ave, Fresno, CA 93721",
+    "mapLink": "https://share.google/q1KiL9RWF9b4zqVkK"
+  },
+  {
+    "id": "mochuelo",
+    "name": "Mochuelo",
+    "website": "https://mochuelotapas.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/mochuelofresno/",
+    "address": "733 E Olive Ave, Fresno, CA 93728",
+    "mapLink": "https://share.google/ZGSrYEvRbK1e3v1uI"
+  },
+  {
+    "id": "lucys",
+    "name": "Lucy's Lounge",
+    "website": null,
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/lucysloungetower",
+    "address": "733 E Olive Ave, Fresno, CA 93728",
+    "mapLink": "https://share.google/vS9HbK9Q1l37TjXdh"
+  },
+  {
+    "id": "goldsteins",
+    "name": "Goldstein's Mortuary & Delicatessen",
+    "website": null,
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/goldsteinsbeer/",
+    "address": "1279 N Wishon Ave, Fresno, CA 93728",
+    "mapLink": "https://share.google/ZPsEbhIyP8AXlAR5F"
+  },
+  {
+    "id": "gazebo gardens",
+    "name": "Gazebo Gardens Inc.",
+    "website": "http://gazebogardens1922.com/",
+    "socialType": "fb",
+    "socialUrl": "https://www.facebook.com/gazebogardens1922",
+    "address": "3204 N Van Ness Blvd, Fresno, CA 93704",
+    "mapLink": "https://share.google/KgeZSEYFDtXwMBDAz"
+  },
+  {
+    "id": "fulton",
     "name": "Fulton 55",
-    "link": "https://www.instagram.com/fulton55/",
+    "website": "https://fulton55.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/fulton55fresno/",
     "address": "875 Divisadero St, Fresno, CA 93721",
-    "mapLink": "https://maps.app.goo.gl/cgUnTCbCfPjX4mej9"
+    "mapLink": "https://share.google/melYhTtXa0sHXsmCP"
+  },
+  {
+    "id": "full circle",
+    "name": "Full Circle Brewing Co.",
+    "website": "https://www.fullcirclebrewing.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/fullcirclebrewingco/",
+    "address": "620 F St, Fresno, CA 93706",
+    "mapLink": "https://share.google/L5GMfbKQFx7yPEsb1"
+  },
+  {
+    "id": "FSWRH",
+    "name": "Fresno State Wahlberg Recital Hall",
+    "website": "https://cah.fresnostate.edu/music/about/facilities.html",
+    "socialType": "ig",
+    "socialUrl": null,
+    "address": "2380 E Keats Ave, Fresno, CA 93740",
+    "mapLink": "https://share.google/Ng4xBNjfwEDonFTN8"
+  },
+  {
+    "id": "fsch",
+    "name": "Fresno State Concert Hall",
+    "website": "https://cah.fresnostate.edu/music/about/facilities.html",
+    "socialType": "ig",
+    "socialUrl": null,
+    "address": "2380 East Keats Avenue & N. Maple Ave, Fresno, CA 93740",
+    "mapLink": "https://share.google/5mRDtwKqOelyHJUxg"
+  },
+  {
+    "id": "franks",
+    "name": "Frank's Place",
+    "website": "https://warnorscenter.org/franks-place/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/warnorscenterfranksplace/?hl=en",
+    "address": "1432 Fulton St, Fresno, CA 93721",
+    "mapLink": "https://share.google/jA5J68FOuQLFnqUzB"
+  },
+  {
+    "id": "chukchansi",
+    "name": "Chukchansi Park",
+    "website": "https://www.milb.com/fresno/tickets/events-at-the-ballpark",
+    "socialType": "ig",
+    "socialUrl": null,
+    "address": "1800 Tulare St, Fresno, CA 93721",
+    "mapLink": "https://share.google/4q994yw8jVQDBXgY4"
+  },
+  {
+    "id": "barrelhouse",
+    "name": "Barrelhouse Brewing Fresno",
+    "website": "https://barrelhousebrewing.com/",
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/bhbcfresno/",
+    "address": "145 E Paseo del Centro, Fresno, CA 93720",
+    "mapLink": "https://share.google/l9zxx6aNrPMCYdiIl"
   }
 ]
