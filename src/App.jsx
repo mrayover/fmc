@@ -1421,15 +1421,18 @@ function ContactView() {
   ]
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 text-center">
       <h2 className="text-lg font-semibold">Contact</h2>
 
       <div className="space-y-3 text-sm text-neutral-700 leading-relaxed">
         {actions.map((a) => {
           const href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(a.subject)}`
           return (
-            <div key={a.subject} className="rounded-xl border border-neutral-200 p-4 bg-white">
-              <div className="font-medium text-neutral-900">{a.title}</div>
+            <div
+              key={a.subject}
+              className="rounded-xl border border-neutral-200 p-4 bg-white text-center"
+            >
+              <div className="font-bold text-neutral-900">{a.title}</div>
               <div className="mt-1 text-sm text-neutral-700">{a.when}</div>
               <div className="mt-2">
                 <a className="underline" href={href}>
@@ -1439,8 +1442,6 @@ function ContactView() {
             </div>
           )
         })}
-
-
       </div>
     </div>
   )
@@ -1776,7 +1777,17 @@ function DevToolsView() {
       <div className="rounded-xl border border-neutral-200 p-4 space-y-3">
         <h3 className="font-medium">Add Event (writes to disk)</h3>
 
-        <div className="grid gap-3">
+<div className="grid gap-3">
+
+  <div>
+    <label className="text-sm font-medium">Event name</label>
+    <input
+      className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+      value={eventDraft.title}
+      onChange={(e) => setEventDraft((d) => ({ ...d, title: e.target.value }))}
+      placeholder="Band / Event name"
+    />
+  </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>

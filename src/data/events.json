@@ -54,5 +54,23 @@
     "flyer": "/flyers/Arcana_VI.png",
     "link": "https://www.cartridgepeople.com/info/blog/printer-testing-print-test-page/",
     "id": "evt_mkk6ctjv_yvx5y2"
+  },
+  {
+    "id": "evt_mkxcqh8c_983nxm",
+    "title": "A Really Really Long Event Title to Test exactly how far things can go in wrap on mobile and desktop",
+    "date": "2026-01-28",
+    "time": "9:00 pm",
+    "venueId": "Paul Shaghoian",
+    "partnerIds": [
+      "Jazz Tuezdayz"
+    ],
+    "genres": [
+      "Jazz",
+      "Rock",
+      "Blues",
+      "Latin"
+    ],
+    "flyer": "/flyers/Arcana_VI.png",
+    "link": "https://creativebooster.net/blogs/colors/shades-of-copper-color"
   }
 ]
