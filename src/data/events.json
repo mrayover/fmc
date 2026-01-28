@@ -56,6 +56,23 @@
     "id": "evt_mkk6ctjv_yvx5y2"
   },
   {
+    "id": "evt_mkxlq0dr_qjmi19",
+    "title": "Testing the Line Up Feature",
+    "date": "2026-01-28",
+    "time": "8:00 PM",
+    "venueId": "goldsteins",
+    "partnerIds": [
+      "Jazz Tuezdayz"
+    ],
+    "genres": [
+      "Jazz",
+      "Blues",
+      "Electronic"
+    ],
+    "flyer": "/flyers/Arcana_VI.png",
+    "link": "https://creativebooster.net/blogs/colors/shades-of-copper-color"
+  },
+  {
     "id": "evt_mkxcqh8c_983nxm",
     "title": "A Really Really Long Event Title to Test exactly how far things can go in wrap on mobile and desktop",
     "date": "2026-01-28",
@@ -72,5 +89,24 @@
     ],
     "flyer": "/flyers/Arcana_VI.png",
     "link": "https://creativebooster.net/blogs/colors/shades-of-copper-color"
+  },
+  {
+    "id": "evt_mkxm0wef_99voe0",
+    "title": "Testing Line Up",
+    "date": "2026-01-29",
+    "time": "8:00 PM",
+    "venueId": "goldsteins",
+    "partnerIds": [
+      "Jazz Tuezdayz"
+    ],
+    "genres": [
+      "Blues",
+      "Electronic",
+      "Jazz",
+      "Rock"
+    ],
+    "flyer": "/flyers/Arcana_VI.png",
+    "link": "https://icolorpalette.com/gradients/zinnwaldite-brown-and-cape-palliser-and-orange-maple-and-warm-fuzzies-and-peach-caramel/",
+    "lineup": "MODE Quartet, Mellowtones, Pfieffer Four, Manshukani + Janzen, Lunch Money and Honey Lake."
   }
 ]

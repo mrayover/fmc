@@ -227,20 +227,23 @@ const server = http.createServer(async (req, res) => {
 
     const partnerIds = normalizePartnerIds(body.partnerIds)
     const genres = normalizeGenres(body.genres)
-    const flyer = normalizeOptionalString(body.flyer)
-    const link = normalizeOptionalString(body.link)
+const flyer = normalizeOptionalString(body.flyer)
+const link = normalizeOptionalString(body.link)
+const lineup = normalizeOptionalString(body.lineup)
 
-    const nextEvent = {
-      id: ensureEventId(body),
-      title,
-      date,
-      time,
-      venueId,
-      partnerIds,
-      genres,
-      flyer,
-      link,
-    }
+const nextEvent = {
+  id: ensureEventId(body),
+  title,
+  date,
+  time,
+  venueId,
+  partnerIds,
+  genres,
+  lineup,
+  flyer,
+  link,
+}
+
 
     const existing = await readJsonArray(EVENTS_PATH)
     const { next: existingWithIds, changed } = withEventIds(existing)
@@ -269,8 +272,9 @@ const server = http.createServer(async (req, res) => {
 
     const partnerIds = normalizePartnerIds(body.partnerIds)
     const genres = normalizeGenres(body.genres)
-    const flyer = normalizeOptionalString(body.flyer)
-    const link = normalizeOptionalString(body.link)
+const flyer = normalizeOptionalString(body.flyer)
+const link = normalizeOptionalString(body.link)
+const lineup = normalizeOptionalString(body.lineup)
 
     const existing = await readJsonArray(EVENTS_PATH)
     const { next: existingWithIds, changed } = withEventIds(existing)
@@ -279,18 +283,20 @@ const server = http.createServer(async (req, res) => {
     const idx = existingWithIds.findIndex((e) => normalizeString(e.id) === id)
     if (idx === -1) return bad(res, "Event not found")
 
-    const updated = {
-      ...existingWithIds[idx],
-      id,
-      title,
-      date,
-      time,
-      venueId,
-      partnerIds,
-      genres,
-      flyer,
-      link,
-    }
+const updated = {
+  ...existingWithIds[idx],
+  id,
+  title,
+  date,
+  time,
+  venueId,
+  partnerIds,
+  genres,
+  lineup,
+  flyer,
+  link,
+}
+
 
     const next = sortEvents([
       ...existingWithIds.slice(0, idx),

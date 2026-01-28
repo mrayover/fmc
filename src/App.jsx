@@ -209,7 +209,6 @@ function EventCard({ event, isOpen, onToggle }) {
     venue?.link || // legacy fallback (safe while transitioning)
     null
 
-
   const partnerName = (() => {
     const ids = Array.isArray(event.partnerIds) ? event.partnerIds : []
     if (ids.length === 0) return null
@@ -226,234 +225,127 @@ function EventCard({ event, isOpen, onToggle }) {
   const venueAddress = venue?.address ? String(venue.address) : null
   const venueMapLink = venue?.mapLink ? String(venue.mapLink) : null
 
+  // New: optional lineup (string). Only renders when expanded AND present.
+  const lineupText = (() => {
+    const s = String(event?.lineup || "").trim()
+    return s.length ? s : null
+  })()
+
   return (
+    <article
+      className={[
+        "rounded-xl border border-neutral-200 p-4 cursor-pointer select-none",
+        "transition-colors duration-200",
+        isOpen ? "bg-[#F9E2CD]" : "bg-white",
+      ].join(" ")}
+      onClick={onToggle}
+      role="button"
+      tabIndex={0}
+      aria-expanded={!!isOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onToggle?.()
+        }
+      }}
+    >
+      {/* Unified header grid (desktop + mobile) */}
+      {/* Columns:
+          1) Time (auto)
+          2) Venue (fluid)
+          3) Genres (bounded)
+          Title + Lineup span columns 2–3 and never wrap under Time.
+      */}
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,10rem)] md:grid-cols-[auto_minmax(0,1fr)_minmax(0,12rem)] gap-x-4 gap-y-1 items-start">
+        {/* Row 1: Time | Title (spans venue+genre columns) */}
+        <div className="text-sm text-neutral-800 whitespace-nowrap pt-[1px]">
+          {event.time || ""}
+        </div>
 
-<article
-  className={[
-    "rounded-xl border border-neutral-200 p-4 cursor-pointer select-none",
-    "transition-colors duration-200",
-    isOpen ? "bg-[#F9E2CD]" : "bg-white",
-  ].join(" ")}
-  onClick={onToggle}
-  role="button"
-  tabIndex={0}
-  aria-expanded={!!isOpen}
-  onKeyDown={(e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault()
-      onToggle?.()
-    }
-  }}
->
+        <div
+          className={[
+            "min-w-0 font-semibold leading-snug text-left",
+            isOpen ? "whitespace-normal break-words" : "truncate",
+          ].join(" ")}
+          style={{ gridColumn: "2 / 4" }}
+        >
+          {event.title || ""}
+        </div>
 
-{/* MOBILE collapsed header row (always visible) */}
-<div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 md:hidden">
-  <div className="min-w-0">
-<TruncateWithTitle
-  text={event.title}
-  className="font-semibold leading-snug truncate"
-/>
-
-    {/* Genre on closed card (optional; no placeholder) */}
-    {genreText ? (
-      <div className="text-xs text-neutral-600 truncate">
-        {genreText}
-      </div>
-    ) : null}
-  </div>
-
-  {event.time ? (
-    <div className="text-sm text-neutral-700 whitespace-nowrap">
-      {event.time}
-    </div>
-  ) : (
-    <div />
-  )}
-
-  {venue?.name ? (
-<TruncateWithTitle
-  text={venue.name}
-  className="text-sm text-neutral-700 whitespace-nowrap truncate max-w-[10rem]"
-/>
-
-  ) : (
-    <div />
-  )}
-</div>
-
-
-
-{/* DESKTOP collapsed row (always visible) */}
-<div className="hidden md:grid md:grid-cols-[auto_minmax(0,1.1fr)_minmax(0,3fr)_minmax(0,0.9fr)] items-center gap-4">
-  {event.time ? (
-    <div className="text-sm text-neutral-800 whitespace-nowrap">
-      {event.time}
-    </div>
-  ) : (
-    <div />
-  )}
-
-  {venue?.name ? (
-<TruncateWithTitle
-  text={venue.name}
-  className="text-sm text-neutral-800 truncate"
-/>
-  ) : (
-    <div />
-  )}
-
-  <div
-    className={[
-      "min-w-0 font-semibold leading-snug text-left",
-      isOpen ? "whitespace-normal break-words" : "truncate",
-    ].join(" ")}
-  >
-    {event.title || ""}
-  </div>
-
-  {genreText ? (
-<TruncateWithTitle
-  text={genreText}
-  className="text-sm text-neutral-700 truncate"
-/>
-  ) : (
-    <div />
-  )}
-</div>
-
-{/* MOBILE expanded layout (renders on tap) */}
-{isOpen ? (
-  <div className="md:hidden mt-3 space-y-3">
-{/* Venue address (map link) + Partner (optional). No placeholders */}
-{(venueAddress || partnerName) ? (
-  <div className="text-sm text-neutral-800 space-y-2">
-    {venueAddress ? (
-      <div className="min-w-0">
-        {venue?.name ? (
-          <div className="font-medium truncate">
-            {venue.name}
-          </div>
+        {/* Row 1.5 (expanded only): Lineup between Title and Venue/Genres */}
+        {isOpen && lineupText ? (
+          <>
+            {/* filler (prevents lineup from ever occupying Time column space) */}
+            <div aria-hidden="true" />
+            <div
+              className="min-w-0 text-sm text-neutral-700 whitespace-normal break-words"
+              style={{ gridColumn: "2 / 4" }}
+            >
+              {lineupText}
+            </div>
+          </>
         ) : null}
 
-        <div className={venue?.name ? "mt-0.5" : ""}>
-          {venueMapLink ? (
-            <a
-              href={venueMapLink}
-              target="_blank"
-              rel="noreferrer"
-              className="underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {venueAddress}
-            </a>
-          ) : (
-            <span>{venueAddress}</span>
-          )}
-        </div>
-      </div>
-    ) : null}
+{/* Row 2: (filler) | Venue | Genres (+ Partner inline when open) */}
+<div aria-hidden="true" />
 
-    {partnerName ? (
-      <div className="text-neutral-700">
-        <div className="text-xs text-neutral-500">Partner</div>
-        <div>{partnerName}</div>
-      </div>
-    ) : null}
-  </div>
-) : null}
+{/* Venue cell (left) */}
+<div
+  className={[
+    "min-w-0 text-sm text-neutral-700",
+    isOpen ? "whitespace-normal break-words" : "truncate",
+  ].join(" ")}
+>
+  {venue?.name ? (
+    <span className="font-semibold">{venue.name}</span>
+  ) : null}
 
-
-    {/* Flyer (optional) */}
-    {event.flyer ? (
-      <div className="overflow-hidden rounded-lg border border-neutral-200">
-        {href ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={event.flyer}
-              alt={`${event.title} flyer`}
-              className="block w-full max-h-[360px] object-contain bg-neutral-100"
-              loading="lazy"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </a>
-        ) : (
-          <img
-            src={event.flyer}
-            alt={`${event.title} flyer`}
-            className="block w-full max-h-[360px] object-contain bg-neutral-100"
-            loading="lazy"
-            onClick={(e) => e.stopPropagation()}
-          />
-        )}
-      </div>
-    ) : null}
-
-    {/* Event Link (optional) */}
-    {href ? (
-      <div className="pt-1">
+  {isOpen && venueAddress ? (
+    <>
+      {" · "}
+      {venueMapLink ? (
         <a
-          href={href}
+          href={venueMapLink}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center justify-center w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm hover:bg-neutral-50"
+          className="underline font-normal"
           onClick={(e) => e.stopPropagation()}
         >
-          Event Link
+          {venueAddress}
         </a>
+      ) : (
+        <span className="font-normal">{venueAddress}</span>
+      )}
+    </>
+  ) : null}
+</div>
+
+{/* Genres / Partner cell (right) */}
+<div
+  className={[
+    "min-w-0 text-sm text-neutral-700 text-right",
+    isOpen ? "whitespace-normal break-words" : "truncate",
+  ].join(" ")}
+>
+  {genreText ? genreText : ""}
+  {isOpen && partnerName ? (
+    <>
+      {" · "}
+      <span>{partnerName}</span>
+    </>
+  ) : null}
+</div>
+
+
+
+
       </div>
-    ) : null}
-  </div>
-) : null}
 
-      {/* DESKTOP expanded layout (no duplicate of collapsed-row info) */}
-{isOpen ? (
-  <div className="hidden md:block mt-3 space-y-3">
+      {/* Expanded content (unified; no mobile/desktop split) */}
+      {isOpen ? (
+        <div className="mt-3 space-y-3">
 
-          {/* Venue – Address (Map Link) + Partner* */}
-{(venueAddress || partnerName) ? (
-  <div className="grid grid-cols-[1fr_minmax(0,12rem)] items-start gap-4 text-sm text-neutral-800">
-    <div className="min-w-0">
-      {venue?.name ? (
-        <div className="font-medium truncate">
-          {venue.name}
-        </div>
-      ) : null}
-
-      {venueAddress ? (
-        <div className={venue?.name ? "mt-0.5" : ""}>
-          {venueMapLink ? (
-            <a
-              href={venueMapLink}
-              target="_blank"
-              rel="noreferrer"
-              className="underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {venueAddress}
-            </a>
-          ) : (
-            <span>{venueAddress}</span>
-          )}
-        </div>
-      ) : null}
-    </div>
-
-    {partnerName ? (
-      <div className="min-w-0 text-right text-neutral-700">
-        <div className="text-xs text-neutral-500">Partner</div>
-        <div className="truncate">{partnerName}</div>
-      </div>
-    ) : null}
-  </div>
-) : null}
-
-
-          {/* Flyer* */}
+          {/* Flyer (optional) */}
           {event.flyer ? (
             <div className="overflow-hidden rounded-lg border border-neutral-200">
               {href ? (
@@ -483,7 +375,7 @@ function EventCard({ event, isOpen, onToggle }) {
             </div>
           ) : null}
 
-          {/* Event Link */}
+          {/* Event Link (optional) */}
           {href ? (
             <div className="pt-1">
               <a
@@ -499,12 +391,10 @@ function EventCard({ event, isOpen, onToggle }) {
           ) : null}
         </div>
       ) : null}
-
-
-
     </article>
   )
 }
+
 
 
 function NavButton({ active, pill, children, onClick }) {
@@ -1460,16 +1350,18 @@ function DevToolsView() {
   const [isUploadingFlyer, setIsUploadingFlyer] = useState(false)
 
 
-  const [eventDraft, setEventDraft] = useState({
-    title: "",
-    date: "",
-    time: "",
-    venueId: "",
-    partnerIds: "",
-    genres: [],
-    flyer: "",
-    link: "",
-  })
+const [eventDraft, setEventDraft] = useState({
+  title: "",
+  date: "",
+  time: "",
+  venueId: "",
+  partnerIds: "",
+  genres: [],
+  lineup: "",
+  flyer: "",
+  link: "",
+})
+
 
   const [venueDraft, setVenueDraft] = useState({
     id: "",
@@ -1565,16 +1457,18 @@ function DevToolsView() {
   }
   function startEdit(ev) {
     setEditingId(ev.id)
-    setEventDraft({
-      title: ev.title || "",
-      date: ev.date || "",
-      time: ev.time || "",
-      venueId: ev.venueId || "",
-      partnerIds: Array.isArray(ev.partnerIds) ? ev.partnerIds.join(", ") : "",
-      genres: Array.isArray(ev.genres) ? ev.genres : [],
-      flyer: ev.flyer || "",
-      link: ev.link || "",
-    })
+setEventDraft({
+  title: ev.title || "",
+  date: ev.date || "",
+  time: ev.time || "",
+  venueId: ev.venueId || "",
+  partnerIds: Array.isArray(ev.partnerIds) ? ev.partnerIds.join(", ") : "",
+  genres: Array.isArray(ev.genres) ? ev.genres : [],
+  lineup: ev.lineup || "",
+  flyer: ev.flyer || "",
+  link: ev.link || "",
+})
+
   }
 
   function cancelEdit() {
@@ -1586,6 +1480,7 @@ function DevToolsView() {
       venueId: "",
       partnerIds: "",
       genres: [],
+      lineup: "",
       flyer: "",
       link: "",
     })
@@ -1604,6 +1499,7 @@ function DevToolsView() {
         venueId: eventDraft.venueId.trim(),
         partnerIds: parsePartnerIds(eventDraft.partnerIds),
         genres: Array.isArray(eventDraft.genres) ? eventDraft.genres : [],
+        lineup: eventDraft.lineup.trim() || null,
         flyer: eventDraft.flyer.trim() || null,
         link: eventDraft.link.trim() || null,
       }
@@ -1657,6 +1553,7 @@ function DevToolsView() {
         venueId: eventDraft.venueId.trim(),
         partnerIds: parsePartnerIds(eventDraft.partnerIds),
         genres: Array.isArray(eventDraft.genres) ? eventDraft.genres : [],
+        lineup: eventDraft.lineup.trim() || null,
         flyer: eventDraft.flyer.trim() || null,
         link: eventDraft.link.trim() || null,
       }
@@ -1669,8 +1566,10 @@ function DevToolsView() {
       const out = await res.json()
       if (!out.ok) throw new Error(out.error || "Failed to save event")
 
-      setEventsJson(JSON.stringify(out.data, null, 2))
-      setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
+setEventsJson(JSON.stringify(out.data, null, 2))
+setEventsList(Array.isArray(out.data) ? out.data : [])
+setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
+
 
       setEventDraft({
         title: "",
@@ -1679,6 +1578,7 @@ function DevToolsView() {
         venueId: "",
         partnerIds: "",
         genres: [],
+        lineup: "",
         flyer: "",
         link: "",
       })
@@ -1864,6 +1764,16 @@ function DevToolsView() {
               })}
             </div>
           </div>
+<div>
+  <label className="text-sm font-medium">Lineup (optional)</label>
+  <textarea
+    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+    value={eventDraft.lineup}
+    onChange={(e) => setEventDraft((d) => ({ ...d, lineup: e.target.value }))}
+    placeholder="For multi-band bills only. Example: Barbara Mansukhani, Chris Janzen, Aaron Quinn, Lunch Money, Jazz Quest..."
+    rows={3}
+  />
+</div>
 
             <div>
     <label className="text-sm font-medium">Flyer (optional)</label>
