@@ -333,7 +333,15 @@ const partnerUrl = (() => {
     isOpen ? "whitespace-normal break-words" : "truncate",
   ].join(" ")}
 >
-  {genreText ? genreText : ""}
+  {/* Desktop: always show genres (collapsed + expanded) */}
+  <span className="hidden md:inline">
+    {genreText ? genreText : ""}
+  </span>
+
+  {/* Mobile: only show genres when expanded */}
+  <span className="md:hidden">
+    {isOpen && genreText ? genreText : ""}
+  </span>
 
   {isOpen && partnerName ? (
     <>
@@ -354,6 +362,7 @@ const partnerUrl = (() => {
     </>
   ) : null}
 </div>
+
 
       </div>
 
