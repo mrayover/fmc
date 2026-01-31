@@ -262,8 +262,19 @@ const partnerUrl = (() => {
           3) Genres (bounded)
           Title + Lineup span columns 2–3 and never wrap under Time.
       */}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,10rem)] md:grid-cols-[auto_minmax(0,1fr)_minmax(0,12rem)] gap-x-4 gap-y-1 items-start">
-        {/* Row 1: Time | Title (spans venue+genre columns) */}
+      <div
+        className={[
+          "grid gap-x-4 gap-y-1 items-start",
+          // Mobile collapsed: 2 columns (Time | Content)
+          // Mobile expanded: 3 columns (Time | Venue | Genres/Partner)
+          isOpen
+            ? "grid-cols-[auto_minmax(0,1fr)_minmax(0,10rem)]"
+            : "grid-cols-[auto_minmax(0,1fr)]",
+          // Desktop stays exactly the same structural behavior (always 3 columns)
+          "md:grid-cols-[auto_minmax(0,1fr)_minmax(0,12rem)]",
+        ].join(" ")}
+      >
+        {/* Row 1: Time | Title (spans remaining columns) */}
         <div className="text-sm text-neutral-800 whitespace-nowrap pt-[1px]">
           {event.time || ""}
         </div>
@@ -273,10 +284,11 @@ const partnerUrl = (() => {
             "min-w-0 font-semibold leading-snug text-left",
             isOpen ? "whitespace-normal break-words" : "truncate",
           ].join(" ")}
-          style={{ gridColumn: "2 / 4" }}
+          style={{ gridColumn: "2 / -1" }}
         >
           {event.title || ""}
         </div>
+
 
         {/* Row 1.5 (expanded only): Lineup between Title and Venue/Genres */}
         {isOpen && lineupText ? (
@@ -285,10 +297,11 @@ const partnerUrl = (() => {
             <div aria-hidden="true" />
             <div
               className="min-w-0 text-sm text-neutral-700 whitespace-normal break-words"
-              style={{ gridColumn: "2 / 4" }}
+              style={{ gridColumn: "2 / -1" }}
             >
               {lineupText}
             </div>
+
           </>
         ) : null}
 
@@ -326,22 +339,18 @@ const partnerUrl = (() => {
   ) : null}
 </div>
 
-{/* Genres / Partner cell (right) */}
+{/* Genres / Partner cell (right)
+    - Mobile collapsed: not rendered (prevents phantom column)
+    - Mobile expanded: rendered
+    - Desktop: always rendered (md:block)
+*/}
 <div
   className={[
     "min-w-0 text-sm text-neutral-700 text-right",
-    isOpen ? "whitespace-normal break-words" : "truncate",
+    isOpen ? "block whitespace-normal break-words" : "hidden md:block truncate",
   ].join(" ")}
 >
-  {/* Desktop: always show genres (collapsed + expanded) */}
-  <span className="hidden md:inline">
-    {genreText ? genreText : ""}
-  </span>
-
-  {/* Mobile: only show genres when expanded */}
-  <span className="md:hidden">
-    {isOpen && genreText ? genreText : ""}
-  </span>
+  {genreText ? genreText : ""}
 
   {isOpen && partnerName ? (
     <>
@@ -362,7 +371,6 @@ const partnerUrl = (() => {
     </>
   ) : null}
 </div>
-
 
       </div>
 
