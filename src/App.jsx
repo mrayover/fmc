@@ -215,7 +215,13 @@ function EventCard({ event, isOpen, onToggle }) {
     const want = slugifyId(ids[0])
     return partners.find((p) => slugifyId(p.id) === want)?.name || ids[0]
   })()
-
+const partnerUrl = (() => {
+  const ids = Array.isArray(event.partnerIds) ? event.partnerIds : []
+  if (ids.length === 0) return null
+  const want = slugifyId(ids[0])
+  const p = partners.find((x) => slugifyId(x.id) === want)
+  return p?.website || p?.socialUrl || p?.link || null
+})()
   const genreText = (() => {
     const gs = Array.isArray(event.genres) ? event.genres : []
     if (gs.length === 0) return null
@@ -328,69 +334,80 @@ function EventCard({ event, isOpen, onToggle }) {
   ].join(" ")}
 >
   {genreText ? genreText : ""}
+
   {isOpen && partnerName ? (
     <>
-      {" · "}
-      <span>{partnerName}</span>
+      <br />
+      {partnerUrl ? (
+        <a
+          href={partnerUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {partnerName}
+        </a>
+      ) : (
+        <span>{partnerName}</span>
+      )}
     </>
   ) : null}
 </div>
 
-
-
-
       </div>
 
       {/* Expanded content (unified; no mobile/desktop split) */}
-      {isOpen ? (
-        <div className="mt-3 space-y-3">
+{isOpen ? (
+  <div className="mt-3 space-y-3">
 
-          {/* Flyer (optional) */}
-          {event.flyer ? (
-            <div className="overflow-hidden rounded-lg border border-neutral-200">
-              {href ? (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <img
-                    src={event.flyer}
-                    alt={`${event.title} flyer`}
-                    className="block w-full max-h-[420px] object-contain bg-neutral-100"
-                    loading="lazy"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </a>
-              ) : (
-                <img
-                  src={event.flyer}
-                  alt={`${event.title} flyer`}
-                  className="block w-full max-h-[420px] object-contain bg-neutral-100"
-                  loading="lazy"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              )}
-            </div>
-          ) : null}
+    {/* Event Link (optional) */}
+    {href ? (
+      <div className="pt-1">
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center justify-center w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm hover:bg-neutral-50"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Event Link
+        </a>
+      </div>
+    ) : null}
 
-          {/* Event Link (optional) */}
-          {href ? (
-            <div className="pt-1">
-              <a
-                href={href}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm hover:bg-neutral-50"
-                onClick={(e) => e.stopPropagation()}
-              >
-                Event Link
-              </a>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+    {/* Flyer (optional) */}
+    {event.flyer ? (
+      <div className="overflow-hidden rounded-lg border border-neutral-200">
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={event.flyer}
+              alt={`${event.title} flyer`}
+              className="block w-full max-h-[420px] object-contain bg-neutral-100"
+              loading="lazy"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </a>
+        ) : (
+          <img
+            src={event.flyer}
+            alt={`${event.title} flyer`}
+            className="block w-full max-h-[420px] object-contain bg-neutral-100"
+            loading="lazy"
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+      </div>
+    ) : null}
+  </div>
+) : null}
+
     </article>
   )
 }
