@@ -7,7 +7,12 @@ import partners from "./data/partners.json"
 // TODO: replace this with your real Google Form URL (e.g. https://forms.gle/xxxx)
 const SUBMIT_EVENT_URL = "https://forms.gle/Kn7VYjzyJfJF6iaE8"
 
+// TODO: replace these with your real form URLs
+const ADD_VENUE_URL = "https://forms.gle/REPLACE_ME_ADD_VENUE"
+const BECOME_PARTNER_URL = "https://forms.gle/REPLACE_ME_BECOME_PARTNER"
+
 const CONTACT_EMAIL = "fresnomusiccalendar@gmail.com"
+
 
 const NAV_ITEMS = [
   { key: "home", label: "Today" },
@@ -467,8 +472,11 @@ function Shell({
   setSearchQuery,
   venueSearchQuery,
   setVenueSearchQuery,
+  partnerSearchQuery,
+  setPartnerSearchQuery,
   children,
 }) {
+
 
   const jumpDateRef = useRef(null)
 
@@ -880,21 +888,31 @@ function Shell({
 
 {/* Row 3: Search + Date */}
 <div className="px-4 py-2 border-t border-neutral-200">
-  {activeTab === "home" || activeTab === "venues" ? (
+{activeTab === "home" || activeTab === "venues" || activeTab === "partners" ? (
     <div className="flex items-center gap-3">
-      {/* Search (Home + Venues only) */}
+      {/* Search (Home + Venues + Partners) */}
       <input
         type="text"
         value={
           activeTab === "home"
             ? searchQuery
-            : (venueSearchQuery || "")
+            : activeTab === "venues"
+              ? (venueSearchQuery || "")
+              : (partnerSearchQuery || "")
         }
         onChange={(e) => {
           if (activeTab === "home") setSearchQuery(e.target.value)
           if (activeTab === "venues") setVenueSearchQuery(e.target.value)
+          if (activeTab === "partners") setPartnerSearchQuery(e.target.value)
         }}
-        placeholder={activeTab === "venues" ? "Search Venues" : "Search Events"}
+        placeholder={
+          activeTab === "venues"
+            ? "Search Venues"
+            : activeTab === "partners"
+              ? "Search Partners"
+              : "Search Events"
+        }
+
         className="flex-1 min-w-0 rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm
                    placeholder:text-neutral-400 focus:placeholder-transparent"
         aria-label={activeTab === "venues" ? "Search venues" : "Search events"}
@@ -1075,17 +1093,52 @@ const grouped = useMemo(
     })
   }
 
-  const filterLabel = useMemo(() => {
+  const entityHeader = useMemo(() => {
     if (!filter?.type || !filter?.id) return null
-    if (filter.type === "venue") {
-      return getVenueById(filter.id)?.name || "Venue"
+
+    const normalizeOutboundHref = (url) => {
+      if (!url) return null
+      const s = String(url).trim()
+      if (!s) return null
+      if (/^(https?:)?\/\//i.test(s)) return s.startsWith("//") ? `https:${s}` : s
+      if (/^(mailto:|tel:)/i.test(s)) return s
+      return `https://${s}`
     }
+
+    if (filter.type === "venue") {
+      const v = getVenueById(filter.id)
+      if (!v) return { type: "venue", name: "Venue", logo: null, href: null }
+
+      // Preference: social → website → legacy link → none
+      const href = normalizeOutboundHref(v?.socialUrl || v?.website || v?.link || null)
+
+      return {
+        type: "venue",
+        name: v?.name || "Venue",
+        logo: v?.logo || null,
+        href,
+      }
+    }
+
     if (filter.type === "partner") {
       const want = slugifyId(filter.id)
-      return partners.find((p) => slugifyId(p.id) === want)?.name || "Partner"
+      const p = partners.find((x) => slugifyId(x.id) === want) || null
+      if (!p) return { type: "partner", name: "Partner", logo: null, href: null }
+
+      // Preference: social → website → legacy link → none
+      const href = normalizeOutboundHref(p?.socialUrl || p?.website || p?.link || null)
+
+      return {
+        type: "partner",
+        name: p?.name || "Partner",
+        logo: p?.logo || null,
+        href,
+      }
     }
+
     return null
   }, [filter])
+
 
 
 
@@ -1094,11 +1147,63 @@ return (
     <div className="flex flex-col items-center gap-0">
 
 
-      {filterLabel ? (
-        <div className="text-xs text-neutral-500">
-          Filter: <span className="text-neutral-800">{filterLabel}</span>
-        </div>
-      ) : null}
+{entityHeader ? (
+  <div className="w-full">
+    {/* Entity header (constant footprint). Only shown on filtered calendar views. */}
+    <div className="h-24 w-full rounded-xl border border-neutral-200 bg-white overflow-hidden flex items-center justify-center px-4">
+      {(() => {
+        const outboundHref = entityHeader.href || null
+
+
+
+        if (entityHeader.logo) {
+          const img = (
+            <img
+              src={entityHeader.logo}
+              alt={entityHeader.name}
+              className="max-h-16 max-w-full object-contain"
+            />
+          )
+
+          return outboundHref ? (
+            <a
+              href={outboundHref}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {img}
+            </a>
+          ) : (
+            img
+          )
+        }
+
+        // No logo: make ONLY the centered text clickable when there is exactly one unambiguous destination
+        const textBanner = (
+          <div className="text-base font-semibold text-neutral-900 text-center truncate w-full">
+            {entityHeader.name}
+          </div>
+        )
+
+        return outboundHref ? (
+          <a
+            href={outboundHref}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {textBanner}
+          </a>
+        ) : (
+          textBanner
+        )
+
+      })()}
+    </div>
+  </div>
+) : null}
+
     </div>
 
 
@@ -1257,7 +1362,17 @@ function VenuesView({ onSelectVenue, venueSearchQuery }) {
 }
 
 
-function PartnersView({ onSelectPartner }) {
+function PartnersView({ onSelectPartner, partnerSearchQuery }) {
+  const q = String(partnerSearchQuery || "").trim().toLowerCase()
+
+  const visiblePartners = useMemo(() => {
+    const sorted = [...partners].sort((a, b) =>
+      String(a?.name || "").localeCompare(String(b?.name || ""))
+    )
+    if (!q) return sorted
+    return sorted.filter((p) => String(p?.name || "").toLowerCase().includes(q))
+  }, [q])
+
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">Partners</h2>
@@ -1268,10 +1383,49 @@ function PartnersView({ onSelectPartner }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {[...partners]
-            .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
-            .map((p) => (
+          {visiblePartners.map((p) => {
+            // Website + one social pill (IG preferred, else FB), with legacy safe handling.
+            const normalizeOutboundHref = (url) => {
+              if (!url) return null
+              const s = String(url).trim()
+              if (!s) return null
+              if (/^(https?:)?\/\//i.test(s)) return s.startsWith("//") ? `https:${s}` : s
+              if (/^(mailto:|tel:)/i.test(s)) return s
+              return `https://${s}`
+            }
 
+            const legacyLink = p?.link ? String(p.link) : null
+
+            const websiteHrefRaw = p?.website ? String(p.website) : null
+            const socialHrefRaw = p?.socialUrl ? String(p.socialUrl) : null
+
+            const legacyIsIG = legacyLink && /instagram\.com/i.test(legacyLink)
+            const legacyIsFB = legacyLink && /facebook\.com/i.test(legacyLink)
+
+            const websiteHrefUnnormalized =
+              websiteHrefRaw || (!socialHrefRaw && legacyLink && !legacyIsIG && !legacyIsFB ? legacyLink : null)
+
+            const inferredSocialType =
+              p?.socialType === "ig" || p?.socialType === "fb"
+                ? p.socialType
+                : legacyIsIG
+                  ? "ig"
+                  : legacyIsFB
+                    ? "fb"
+                    : null
+
+            const socialHrefUnnormalized = socialHrefRaw || (legacyIsIG || legacyIsFB ? legacyLink : null)
+
+            const websiteHref = normalizeOutboundHref(websiteHrefUnnormalized)
+            const socialHref = normalizeOutboundHref(socialHrefUnnormalized)
+
+            const socialLabel =
+              inferredSocialType === "ig" ? "IG" :
+              inferredSocialType === "fb" ? "FB" :
+              ""
+
+
+            return (
               <div
                 key={p.id}
                 className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 p-4"
@@ -1285,23 +1439,57 @@ function PartnersView({ onSelectPartner }) {
                   <div className="mt-1 text-xs text-neutral-500">Tap to filter events</div>
                 </button>
 
-                {p.link ? (
-                  <a
-                    className="shrink-0 rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-                    href={p.link}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Link
-                  </a>
-                ) : null}
+                <div className="shrink-0 flex items-center gap-2">
+                  {/* Slot A: Website */}
+                  {websiteHref ? (
+                    <a
+                      className="inline-flex w-[6.5rem] justify-center rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                      href={websiteHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Website
+                    </a>
+                  ) : (
+                    <span
+                      className="inline-flex w-[6.5rem] justify-center rounded-full border border-transparent px-3 py-1.5 text-sm opacity-0"
+                      aria-hidden="true"
+                    >
+                      Website
+                    </span>
+                  )}
+
+                  {/* Slot B: Social (one only) */}
+                  {socialHref ? (
+                    <a
+                      className="inline-flex w-[3.5rem] justify-center rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+                      href={socialHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={socialLabel ? `Social: ${socialLabel}` : "Social"}
+                    >
+                      {socialLabel || "Social"}
+                    </a>
+                  ) : (
+                    <span
+                      className="inline-flex w-[3.5rem] justify-center rounded-full border border-transparent px-3 py-1.5 text-sm opacity-0"
+                      aria-hidden="true"
+                    >
+                      IG
+                    </span>
+                  )}
+                </div>
               </div>
-            ))}
+            )
+          })}
         </div>
       )}
     </div>
   )
 }
+
 
 
 function AboutView() {
@@ -1325,22 +1513,30 @@ function ContactView() {
     {
       title: "Submit a correction to an event",
       when: "Use this if an event listing has incorrect or outdated information.",
+      kind: "mailto",
       subject: "Event Correction – Fresno Music Calendar",
+      cta: "Email",
     },
     {
-      title: "Request to add your venue",
+      title: "Add a Venue",
       when: "Use this if you operate a venue and want it included for future event listings.",
-      subject: "Venue Addition Request – Fresno Music Calendar",
+      kind: "form",
+      href: ADD_VENUE_URL,
+      cta: "Open venue request form",
     },
     {
-      title: "Request to become a partner",
-      when: "Use this for partnerships, presenters, or organizations interested in collaborating.",
-      subject: "Partnership Inquiry – Fresno Music Calendar",
+      title: "Become a Partner / Add your Band",
+      when: "Use this for bands, presenters, promoters, or organizations that want to be listed.",
+      kind: "form",
+      href: BECOME_PARTNER_URL,
+      cta: "Open partner / band form",
     },
     {
       title: "General inquiries",
       when: "Use this for questions that don’t fit the categories above.",
+      kind: "mailto",
       subject: "General Inquiry – Fresno Music Calendar",
+      cta: "Email",
     },
   ]
 
@@ -1350,17 +1546,26 @@ function ContactView() {
 
       <div className="space-y-3 text-sm text-neutral-700 leading-relaxed">
         {actions.map((a) => {
-          const href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(a.subject)}`
+          const href =
+            a.kind === "mailto"
+              ? `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(a.subject)}`
+              : a.href
+
           return (
             <div
-              key={a.subject}
+              key={a.title}
               className="rounded-xl border border-neutral-200 p-4 bg-white text-center"
             >
               <div className="font-bold text-neutral-900">{a.title}</div>
               <div className="mt-1 text-sm text-neutral-700">{a.when}</div>
               <div className="mt-2">
-                <a className="underline" href={href}>
-                  Email: {a.subject}
+                <a
+                  className="underline"
+                  href={href}
+                  target={a.kind === "form" ? "_blank" : undefined}
+                  rel={a.kind === "form" ? "noreferrer" : undefined}
+                >
+                  {a.cta}
                 </a>
               </div>
             </div>
@@ -1371,6 +1576,7 @@ function ContactView() {
   )
 }
 
+
 function DevToolsView() {
   const API = "http://localhost:8787"
 
@@ -1380,8 +1586,17 @@ function DevToolsView() {
   const [editingId, setEditingId] = useState(null)
   const [venuesJson, setVenuesJson] = useState("")
   const [partnersJson, setPartnersJson] = useState("")
+  const [venuesList, setVenuesList] = useState([])
+  const [partnersList, setPartnersList] = useState([])
+  const [selectedVenueId, setSelectedVenueId] = useState("")
+  const [selectedPartnerId, setSelectedPartnerId] = useState("")
+  const [editingVenueId, setEditingVenueId] = useState(null)
+  const [editingPartnerId, setEditingPartnerId] = useState(null)
   const [flyerFiles, setFlyerFiles] = useState([])
   const [isUploadingFlyer, setIsUploadingFlyer] = useState(false)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+
+
 
 
 const [eventDraft, setEventDraft] = useState({
@@ -1400,13 +1615,23 @@ const [eventDraft, setEventDraft] = useState({
   const [venueDraft, setVenueDraft] = useState({
     id: "",
     name: "",
+    logo: "",
     website: "",
     socialType: "ig", // default pill choice
     socialUrl: "",
     address: "",
     mapLink: "",
   })
-  const [partnerDraft, setPartnerDraft] = useState({ id: "", name: "", link: "" })
+
+    const [partnerDraft, setPartnerDraft] = useState({
+    id: "",
+    name: "",
+    logo: "",
+    website: "",
+    socialType: "ig",
+    socialUrl: "",
+  })
+
 
 
   function parsePartnerIds(input) {
@@ -1460,6 +1685,54 @@ const [eventDraft, setEventDraft] = useState({
     }
   }
 
+  async function uploadLogo(file, kind, id) {
+    if (!file) return null
+
+    const safeKind = kind === "venue" || kind === "partner" ? kind : null
+    const safeId = String(id || "").trim()
+    if (!safeKind) {
+      setStatus("Error: Invalid logo kind.")
+      return null
+    }
+    if (!safeId) {
+      setStatus("Set an id before uploading a logo.")
+      return null
+    }
+
+    try {
+      setIsUploadingLogo(true)
+      setStatus("Uploading logo…")
+
+      const ab = await file.arrayBuffer()
+      const base64 = btoa(
+        String.fromCharCode(...new Uint8Array(ab))
+      )
+
+      const res = await fetch(`${API}/api/logos/upload`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: safeKind,
+          id: safeId,
+          filename: file.name,
+          dataBase64: base64,
+        }),
+      })
+
+      const out = await res.json()
+      if (!out.ok) throw new Error(out.error || "Failed to upload logo")
+
+      setStatus("Logo uploaded.")
+      return out.path || null
+    } catch (err) {
+      setStatus(`Error: ${err?.message || String(err)}`)
+      return null
+    } finally {
+      setIsUploadingLogo(false)
+    }
+  }
+
+
 
   async function fetchAll() {
     try {
@@ -1481,7 +1754,10 @@ const [eventDraft, setEventDraft] = useState({
       setEventsList(Array.isArray(e.data) ? e.data : [])
       setVenuesJson(JSON.stringify(v.data, null, 2))
       setPartnersJson(JSON.stringify(p.data, null, 2))
+      setVenuesList(Array.isArray(v.data) ? v.data : [])
+      setPartnersList(Array.isArray(p.data) ? p.data : [])
       setFlyerFiles(Array.isArray(f.data) ? f.data : [])
+
 
       setStatus("Loaded.")
 
@@ -1576,7 +1852,189 @@ setEventDraft({
     }
   }
 
+
+  const venuesForDev = venuesList.length ? venuesList : venues
+  const partnersForDev = partnersList.length ? partnersList : partners
+
+  function startVenueEditById(id) {
+    const want = String(id || "").trim()
+    if (!want) return
+    const v = venuesForDev.find((x) => String(x.id || "") === want)
+    if (!v) return
+
+    setSelectedVenueId(want)
+    setEditingVenueId(want)
+    setVenueDraft({
+      id: v.id || "",
+      name: v.name || "",
+      logo: v.logo || "",
+      website: v.website || "",
+      socialType: v.socialType || "ig",
+      socialUrl: v.socialUrl || "",
+      address: v.address || "",
+      mapLink: v.mapLink || "",
+    })
+  }
+
+  function cancelVenueEdit() {
+    setEditingVenueId(null)
+    setSelectedVenueId("")
+    setVenueDraft({
+      id: "",
+      name: "",
+      logo: "",
+      website: "",
+      socialType: "ig",
+      socialUrl: "",
+      address: "",
+      mapLink: "",
+    })
+  }
+
+  async function saveVenueEdit() {
+    try {
+      if (!editingVenueId) return
+      setStatus("Updating venue…")
+
+      const payload = {
+        id: venueDraft.id.trim(),
+        name: venueDraft.name.trim(),
+        logo: venueDraft.logo.trim() || null,
+        website: venueDraft.website.trim() || null,
+        socialType: (venueDraft.socialType || "").trim() || null,
+        socialUrl: venueDraft.socialUrl.trim() || null,
+        address: venueDraft.address.trim() || null,
+        mapLink: venueDraft.mapLink.trim() || null,
+      }
+
+      const res = await fetch(`${API}/api/venues/update`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      const out = await res.json()
+      if (!out.ok) throw new Error(out.error || "Failed to update venue")
+
+      setVenuesJson(JSON.stringify(out.data, null, 2))
+      setVenuesList(Array.isArray(out.data) ? out.data : [])
+      setStatus("Venue updated.")
+      cancelVenueEdit()
+    } catch (err) {
+      setStatus(`Error: ${err?.message || String(err)}`)
+    }
+  }
+
+  async function deleteVenue(id) {
+    try {
+      const want = String(id || "").trim()
+      if (!want) return
+      setStatus("Deleting venue…")
+
+      const res = await fetch(`${API}/api/venues/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: want }),
+      })
+      const out = await res.json()
+      if (!out.ok) throw new Error(out.error || "Failed to delete venue")
+
+      setVenuesJson(JSON.stringify(out.data, null, 2))
+      setVenuesList(Array.isArray(out.data) ? out.data : [])
+      setStatus("Venue deleted.")
+      if (editingVenueId === want) cancelVenueEdit()
+    } catch (err) {
+      setStatus(`Error: ${err?.message || String(err)}`)
+    }
+  }
+
+  function startPartnerEditById(id) {
+    const want = String(id || "").trim()
+    if (!want) return
+    const p = partnersForDev.find((x) => String(x.id || "") === want)
+    if (!p) return
+
+    setSelectedPartnerId(want)
+    setEditingPartnerId(want)
+    setPartnerDraft({
+      id: p.id || "",
+      name: p.name || "",
+      logo: p.logo || "",
+      website: p.website || "",
+      socialType: p.socialType || "ig",
+      socialUrl: p.socialUrl || "",
+    })
+  }
+
+  function cancelPartnerEdit() {
+    setEditingPartnerId(null)
+    setSelectedPartnerId("")
+    setPartnerDraft({
+      id: "",
+      name: "",
+      logo: "",
+      website: "",
+      socialType: "ig",
+      socialUrl: "",
+    })
+  }
+
+  async function savePartnerEdit() {
+    try {
+      if (!editingPartnerId) return
+      setStatus("Updating partner…")
+
+      const payload = {
+        id: partnerDraft.id.trim(),
+        name: partnerDraft.name.trim(),
+        logo: partnerDraft.logo.trim() || null,
+        website: partnerDraft.website.trim() || null,
+        socialType: (partnerDraft.socialType || "").trim() || null,
+        socialUrl: partnerDraft.socialUrl.trim() || null,
+      }
+
+      const res = await fetch(`${API}/api/partners/update`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      const out = await res.json()
+      if (!out.ok) throw new Error(out.error || "Failed to update partner")
+
+      setPartnersJson(JSON.stringify(out.data, null, 2))
+      setPartnersList(Array.isArray(out.data) ? out.data : [])
+      setStatus("Partner updated.")
+      cancelPartnerEdit()
+    } catch (err) {
+      setStatus(`Error: ${err?.message || String(err)}`)
+    }
+  }
+
+  async function deletePartner(id) {
+    try {
+      const want = String(id || "").trim()
+      if (!want) return
+      setStatus("Deleting partner…")
+
+      const res = await fetch(`${API}/api/partners/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: want }),
+      })
+      const out = await res.json()
+      if (!out.ok) throw new Error(out.error || "Failed to delete partner")
+
+      setPartnersJson(JSON.stringify(out.data, null, 2))
+      setPartnersList(Array.isArray(out.data) ? out.data : [])
+      setStatus("Partner deleted.")
+      if (editingPartnerId === want) cancelPartnerEdit()
+    } catch (err) {
+      setStatus(`Error: ${err?.message || String(err)}`)
+    }
+  }
+
+
   async function addEvent() {
+
     try {
       setStatus("Saving event…")
 
@@ -1628,6 +2086,7 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
       const payload = {
         id: venueDraft.id.trim(),
         name: venueDraft.name.trim(),
+        logo: venueDraft.logo.trim() || null,
         website: venueDraft.website.trim() || null,
         socialType: (venueDraft.socialType || "").trim() || null,
         socialUrl: venueDraft.socialUrl.trim() || null,
@@ -1647,12 +2106,14 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
       setVenueDraft({
         id: "",
         name: "",
+        logo: "",
         website: "",
         socialType: "ig",
         socialUrl: "",
         address: "",
         mapLink: "",
       })
+
       await fetchAll()
     } catch (err) {
       setStatus(`Error: ${err?.message || String(err)}`)
@@ -1667,8 +2128,12 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
       const payload = {
         id: partnerDraft.id.trim(),
         name: partnerDraft.name.trim(),
-        link: partnerDraft.link.trim(),
+        logo: partnerDraft.logo.trim() || null,
+        website: partnerDraft.website.trim() || null,
+        socialType: (partnerDraft.socialType || "").trim() || null,
+        socialUrl: partnerDraft.socialUrl.trim() || null,
       }
+
 
       const res = await fetch(`${API}/api/partners/add`, {
         method: "POST",
@@ -1678,7 +2143,15 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
       const out = await res.json()
       if (!out.ok) throw new Error(out.error || "Failed to save partner")
 
-      setPartnerDraft({ id: "", name: "", link: "" })
+      setPartnerDraft({
+        id: "",
+        name: "",
+        logo: "",
+        website: "",
+        socialType: "ig",
+        socialUrl: "",
+      })
+
       await fetchAll()
     } catch (err) {
       setStatus(`Error: ${err?.message || String(err)}`)
@@ -1752,11 +2225,12 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
               onChange={(e) => setEventDraft((d) => ({ ...d, venueId: e.target.value }))}
             >
               <option value="">Select a venue…</option>
-              {venues.map((v) => (
+              {venuesForDev.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.name}
                 </option>
               ))}
+
             </select>
           </div>
 
@@ -1944,9 +2418,70 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
         )}
       </div>
 
+      {/* Manage Venues */}
+      <div className="rounded-xl border border-neutral-200 p-4 space-y-3">
+        <h3 className="font-medium">Manage Venues</h3>
+
+        <div className="grid gap-3">
+          <div>
+            <label className="text-sm font-medium">Select venue</label>
+            <select
+              className="mt-1 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+              value={selectedVenueId}
+              onChange={(e) => {
+                const id = e.target.value
+                setSelectedVenueId(id)
+                if (id) startVenueEditById(id)
+              }}
+            >
+              <option value="">Choose a venue…</option>
+              {venuesForDev.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name} ({v.id})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {editingVenueId ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={saveVenueEdit}
+                className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white"
+              >
+                Save changes
+              </button>
+              <button
+                type="button"
+                onClick={cancelVenueEdit}
+                className="rounded-lg border border-neutral-200 px-4 py-2 text-sm hover:bg-neutral-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const name = (venueDraft.name || venueDraft.id || "").trim()
+                  if (confirm(`Delete "${name}"?`)) deleteVenue(editingVenueId)
+                }}
+                className="rounded-lg border border-neutral-200 px-4 py-2 text-sm hover:bg-neutral-50"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <div className="text-xs text-neutral-600">
+              Choose a venue to edit or delete.
+            </div>
+          )}
+        </div>
+      </div>
+
             {/* Add Venue */}
       <div className="rounded-xl border border-neutral-200 p-4 space-y-3">
         <h3 className="font-medium">Add Venue (writes to disk)</h3>
+
 
         <div className="grid gap-3">
           <div>
@@ -1969,6 +2504,42 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
           </div>
 
           <div>
+            <label className="text-sm font-medium">logo (upload)</label>
+            <input
+              type="file"
+              accept="image/*"
+              disabled={isUploadingLogo}
+              className="mt-1 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+              onChange={async (e) => {
+                const file = e.target.files?.[0] || null
+                if (!file) return
+
+                const id = (venueDraft.id || "").trim()
+                if (!id) {
+                  setStatus("Set venue id before uploading a logo.")
+                  e.target.value = ""
+                  return
+                }
+
+                const savedPath = await uploadLogo(file, "venue", id)
+                if (savedPath) setVenueDraft((d) => ({ ...d, logo: savedPath }))
+
+                e.target.value = ""
+              }}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">logo path (optional)</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+              value={venueDraft.logo}
+              onChange={(e) => setVenueDraft((d) => ({ ...d, logo: e.target.value }))}
+              placeholder="/logos/venues/your-venue.png"
+            />
+          </div>
+
+          <div>
             <label className="text-sm font-medium">website</label>
             <input
               className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
@@ -1977,6 +2548,7 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
               placeholder="https://..."
             />
           </div>
+
 
           <div className="grid grid-cols-[7rem_1fr] gap-3">
             <div>
@@ -2023,18 +2595,79 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
             />
           </div>
 
-          <button
-            type="button"
-            onClick={addVenue}
-            className="rounded-lg border border-neutral-200 px-4 py-2 text-sm hover:bg-neutral-50"
-          >
-            Add venue (write to disk)
-          </button>
+        <button
+          type="button"
+          onClick={addVenue}
+          disabled={!!editingVenueId}
+          className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        >
+          Add venue (write to disk)
+        </button>
+
         </div>
       </div>
 
 
-      {/* Add Partner */}
+      {/* Manage Partners */}
+      <div className="rounded-xl border border-neutral-200 p-4 space-y-3">
+        <h3 className="font-medium">Manage Partners</h3>
+
+        <div className="grid gap-3">
+          <div>
+            <label className="text-sm font-medium">Select partner</label>
+            <select
+              className="mt-1 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+              value={selectedPartnerId}
+              onChange={(e) => {
+                const id = e.target.value
+                setSelectedPartnerId(id)
+                if (id) startPartnerEditById(id)
+              }}
+            >
+              <option value="">Choose a partner…</option>
+              {partnersForDev.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.id})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {editingPartnerId ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={savePartnerEdit}
+                className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white"
+              >
+                Save changes
+              </button>
+              <button
+                type="button"
+                onClick={cancelPartnerEdit}
+                className="rounded-lg border border-neutral-200 px-4 py-2 text-sm hover:bg-neutral-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const name = (partnerDraft.name || partnerDraft.id || "").trim()
+                  if (confirm(`Delete "${name}"?`)) deletePartner(editingPartnerId)
+                }}
+                className="rounded-lg border border-neutral-200 px-4 py-2 text-sm hover:bg-neutral-50"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <div className="text-xs text-neutral-600">
+              Choose a partner to edit or delete.
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="rounded-xl border border-neutral-200 p-4 space-y-3">
         <h3 className="font-medium">Add Partner (writes to disk)</h3>
 
@@ -2049,6 +2682,7 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
             />
           </div>
 
+
           <div>
             <label className="text-sm font-medium">name</label>
             <input
@@ -2059,21 +2693,85 @@ setStatus("Event saved to src/data/events.json. Refresh Home if needed.")
           </div>
 
           <div>
-            <label className="text-sm font-medium">link</label>
+            <label className="text-sm font-medium">logo (upload)</label>
             <input
-              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              value={partnerDraft.link}
-              onChange={(e) => setPartnerDraft((d) => ({ ...d, link: e.target.value }))}
+              type="file"
+              accept="image/*"
+              disabled={isUploadingLogo}
+              className="mt-1 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+              onChange={async (e) => {
+                const file = e.target.files?.[0] || null
+                if (!file) return
+
+                const id = (partnerDraft.id || "").trim()
+                if (!id) {
+                  setStatus("Set partner id before uploading a logo.")
+                  e.target.value = ""
+                  return
+                }
+
+                const savedPath = await uploadLogo(file, "partner", id)
+                if (savedPath) setPartnerDraft((d) => ({ ...d, logo: savedPath }))
+
+                e.target.value = ""
+              }}
             />
           </div>
+
+          <div>
+            <label className="text-sm font-medium">logo path (optional)</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+              value={partnerDraft.logo}
+              onChange={(e) => setPartnerDraft((d) => ({ ...d, logo: e.target.value }))}
+              placeholder="/logos/partners/your-partner.png"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">website</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+              value={partnerDraft.website}
+              onChange={(e) => setPartnerDraft((d) => ({ ...d, website: e.target.value }))}
+              placeholder="https://..."
+            />
+          </div>
+
+          <div className="grid grid-cols-[7rem_1fr] gap-3">
+            <div>
+              <label className="text-sm font-medium">social</label>
+              <select
+                className="mt-1 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
+                value={partnerDraft.socialType}
+                onChange={(e) => setPartnerDraft((d) => ({ ...d, socialType: e.target.value }))}
+              >
+                <option value="ig">IG</option>
+                <option value="fb">FB</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">social url</label>
+              <input
+                className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                value={partnerDraft.socialUrl}
+                onChange={(e) => setPartnerDraft((d) => ({ ...d, socialUrl: e.target.value }))}
+                placeholder="https://instagram.com/... or https://facebook.com/..."
+              />
+            </div>
+          </div>
+
 
           <button
             type="button"
             onClick={addPartner}
-            className="rounded-lg border border-neutral-200 px-4 py-2 text-sm hover:bg-neutral-50"
+            disabled={!!editingPartnerId}
+            className="rounded-lg border border-neutral-200 px-4 py-2 text-sm hover:bg-neutral-50 disabled:opacity-50"
           >
             Add partner (write to disk)
           </button>
+
         </div>
       </div>
 
@@ -2123,6 +2821,7 @@ export default function App() {
   const [selectedGenres, setSelectedGenres] = useState(() => new Set(GENRES))
   const [searchQuery, setSearchQuery] = useState("")
   const [venueSearchQuery, setVenueSearchQuery] = useState("")
+  const [partnerSearchQuery, setPartnerSearchQuery] = useState("")
 
 
   function resetGenresToAll() {
@@ -2165,7 +2864,10 @@ const setActiveTabWrapped = (key) => {
       setSearchQuery={setSearchQuery}
       venueSearchQuery={venueSearchQuery}
       setVenueSearchQuery={setVenueSearchQuery}
+      partnerSearchQuery={partnerSearchQuery}
+      setPartnerSearchQuery={setPartnerSearchQuery}
     >
+
 
 
 
@@ -2202,9 +2904,11 @@ const setActiveTabWrapped = (key) => {
 
       {activeTab === "partners" && (
         <PartnersView
+          partnerSearchQuery={partnerSearchQuery}
           onSelectPartner={(partnerId) => goHomeWithFilter({ type: "partner", id: partnerId })}
         />
       )}
+
 
       {activeTab === "about" && <AboutView />}
       {activeTab === "contact" && <ContactView />}

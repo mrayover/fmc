@@ -11,6 +11,8 @@ const EVENTS_PATH = path.join(DATA_DIR, "events.json")
 const VENUES_PATH = path.join(DATA_DIR, "venues.json")
 const PARTNERS_PATH = path.join(DATA_DIR, "partners.json")
 const FLYERS_DIR = path.join(ROOT, "public", "flyers")
+const LOGOS_DIR = path.join(ROOT, "public", "logos")
+
 
 async function ensureDir(p) {
   await fs.mkdir(p, { recursive: true })
@@ -72,10 +74,19 @@ function normalizeSocialType(x) {
   return null
 }
 
+function inferSocialTypeFromUrl(url) {
+  const u = normalizeString(url).toLowerCase()
+  if (!u) return null
+  if (u.includes("instagram.com")) return "ig"
+  if (u.includes("facebook.com")) return "fb"
+  return null
+}
+
 function normalizePartnerIds(x) {
   if (!Array.isArray(x)) return []
   return x.map((v) => normalizeString(v)).filter(Boolean)
 }
+
 function normalizeGenres(x) {
   if (Array.isArray(x)) return x.map((v) => normalizeString(v)).filter(Boolean)
   // allow comma-separated string as a convenience (optional)
@@ -210,6 +221,61 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // Dev-only: upload a logo into /public/logos/(venues|partners)
+  // Expects JSON: { kind: "venue"|"partner", id: "strummers", filename: "logo.png", dataBase64: "<base64 bytes>" }
+  if (req.method === "POST" && req.url === "/api/logos/upload") {
+    const body = await readBodyJson(req)
+    if (!body) return bad(res, "Invalid JSON")
+
+    const kindRaw = normalizeString(body.kind).toLowerCase()
+    const idRaw = normalizeString(body.id)
+    const filenameRaw = normalizeString(body.filename)
+    const dataBase64 = normalizeString(body.dataBase64)
+
+    if (!kindRaw || !idRaw || !filenameRaw || !dataBase64) {
+      return bad(res, "Missing required fields: kind, id, filename, dataBase64")
+    }
+
+    const kind = kindRaw === "venue" ? "venues" : kindRaw === "partner" ? "partners" : null
+    if (!kind) return bad(res, 'Invalid "kind" (must be "venue" or "partner")')
+
+    // Restrict id to safe filename characters
+    const safeId = idRaw
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+
+    if (!safeId) return bad(res, "Invalid id")
+
+    // Infer extension from original filename
+    const baseName = path.basename(filenameRaw)
+    const ext = path.extname(baseName).toLowerCase()
+
+    const okExt =
+      ext === ".png" ||
+      ext === ".jpg" ||
+      ext === ".jpeg" ||
+      ext === ".webp" ||
+      ext === ".gif"
+
+    if (!okExt) {
+      return bad(res, "Logo must be an image file (.png, .jpg, .jpeg, .webp, .gif)")
+    }
+
+    const outName = `${safeId}${ext}`
+    const outDir = path.join(LOGOS_DIR, kind)
+
+    try {
+      await ensureDir(outDir)
+      const buf = Buffer.from(dataBase64, "base64")
+      await fs.writeFile(path.join(outDir, outName), buf)
+      return send(res, 200, { ok: true, path: `/logos/${kind}/${outName}` })
+    } catch (err) {
+      return bad(res, "Failed to write logo to disk")
+    }
+  }
+
+
 
   // Add Event
   if (req.method === "POST" && req.url === "/api/events") {
@@ -327,14 +393,89 @@ const updated = {
   }
 
 
-
-   // Add Venue
-  if (req.method === "POST" && (req.url === "/api/venues" || req.url === "/api/venues/add")) {
+  // Update Venue
+  if (req.method === "POST" && req.url === "/api/venues/update") {
     const body = await readBodyJson(req)
     if (!body) return bad(res, "Invalid JSON")
 
     const id = normalizeString(body.id)
     const name = normalizeString(body.name)
+
+    const logo = normalizeOptionalString(body.logo)
+
+    const website = normalizeOptionalString(body.website)
+    const socialType = normalizeSocialType(body.socialType)
+    const socialUrl = normalizeOptionalString(body.socialUrl)
+
+    const address = normalizeOptionalString(body.address)
+    const mapLink = normalizeOptionalString(body.mapLink)
+
+    if (!id || !name) {
+      return bad(res, "Missing required fields: id, name")
+    }
+
+    if (!website && !socialUrl) {
+      return bad(res, "Missing required fields: website OR socialUrl")
+    }
+
+    if (socialUrl && !socialType) {
+      return bad(res, "Missing required field: socialType (ig or fb) when socialUrl is provided")
+    }
+
+    const existing = await readJsonArray(VENUES_PATH)
+    const idx = existing.findIndex((v) => normalizeString(v.id) === id)
+    if (idx === -1) return bad(res, "Venue not found")
+
+    const updated = {
+      ...existing[idx],
+      id,
+      name,
+      logo,
+      website,
+      socialType,
+      socialUrl,
+      address,
+      mapLink,
+    }
+
+    const next = [
+      ...existing.slice(0, idx),
+      updated,
+      ...existing.slice(idx + 1),
+    ]
+
+    await writeJsonArray(VENUES_PATH, next)
+    return send(res, 200, { ok: true, data: next })
+  }
+
+  // Delete Venue
+  if (req.method === "POST" && req.url === "/api/venues/delete") {
+    const body = await readBodyJson(req)
+    if (!body) return bad(res, "Invalid JSON")
+
+    const id = normalizeString(body.id)
+    if (!id) return bad(res, "Missing required field: id")
+
+    const existing = await readJsonArray(VENUES_PATH)
+    const next = existing.filter((v) => normalizeString(v.id) !== id)
+
+    await writeJsonArray(VENUES_PATH, next)
+    return send(res, 200, { ok: true, data: next })
+  }
+
+
+
+   // Add Venue
+   // Add Venue
+  if (req.method === "POST" && (req.url === "/api/venues" || req.url === "/api/venues/add")) {
+
+    const body = await readBodyJson(req)
+    if (!body) return bad(res, "Invalid JSON")
+
+    const id = normalizeString(body.id)
+    const name = normalizeString(body.name)
+
+    const logo = normalizeOptionalString(body.logo)
 
     // New fields (all optional, but at least one outbound link is required)
     const website = normalizeOptionalString(body.website)
@@ -362,6 +503,7 @@ const updated = {
     const nextVenue = {
       id,
       name,
+      logo,
       website,
       socialType,
       socialUrl,
@@ -378,26 +520,147 @@ const updated = {
   }
 
 
-  // Add Partner
-  if (req.method === "POST" && (req.url === "/api/partners" || req.url === "/api/partners/add")) {
+  // Update Partner
+  if (req.method === "POST" && req.url === "/api/partners/update") {
     const body = await readBodyJson(req)
     if (!body) return bad(res, "Invalid JSON")
 
     const id = normalizeString(body.id)
     const name = normalizeString(body.name)
-    const link = normalizeString(body.link)
 
-    if (!id || !name || !link) {
-      return bad(res, "Missing required fields: id, name, link")
+    const logo = normalizeOptionalString(body.logo)
+
+    let website = normalizeOptionalString(body.website)
+    let socialType = normalizeSocialType(body.socialType)
+    let socialUrl = normalizeOptionalString(body.socialUrl)
+
+    // Legacy support: body.link
+    const legacyLink = normalizeOptionalString(body.link)
+    if (legacyLink && !website && !socialUrl) {
+      const inferred = inferSocialTypeFromUrl(legacyLink)
+      if (inferred) {
+        socialType = inferred
+        socialUrl = legacyLink
+      } else {
+        website = legacyLink
+      }
+    }
+
+    if (!id || !name) {
+      return bad(res, "Missing required fields: id, name")
+    }
+
+    if (!website && !socialUrl) {
+      return bad(res, "Missing required fields: website OR socialUrl")
+    }
+
+    if (socialUrl && !socialType) {
+      const inferred = inferSocialTypeFromUrl(socialUrl)
+      if (inferred) socialType = inferred
+      else return bad(res, "Missing required field: socialType (ig or fb) when socialUrl is provided")
     }
 
     const existing = await readJsonArray(PARTNERS_PATH)
-    const withoutDup = existing.filter((p) => normalizeString(p.id) !== id)
-    const next = [{ id, name, link }, ...withoutDup]
+    const idx = existing.findIndex((p) => normalizeString(p.id) === id)
+    if (idx === -1) return bad(res, "Partner not found")
+
+    const updated = {
+      ...existing[idx],
+      id,
+      name,
+      logo,
+      website,
+      socialType,
+      socialUrl,
+    }
+
+    const next = [
+      ...existing.slice(0, idx),
+      updated,
+      ...existing.slice(idx + 1),
+    ]
 
     await writeJsonArray(PARTNERS_PATH, next)
     return send(res, 200, { ok: true, data: next })
   }
+
+  // Delete Partner
+  if (req.method === "POST" && req.url === "/api/partners/delete") {
+    const body = await readBodyJson(req)
+    if (!body) return bad(res, "Invalid JSON")
+
+    const id = normalizeString(body.id)
+    if (!id) return bad(res, "Missing required field: id")
+
+    const existing = await readJsonArray(PARTNERS_PATH)
+    const next = existing.filter((p) => normalizeString(p.id) !== id)
+
+    await writeJsonArray(PARTNERS_PATH, next)
+    return send(res, 200, { ok: true, data: next })
+  }
+
+
+  // Add Partner
+  if (req.method === "POST" && (req.url === "/api/partners" || req.url === "/api/partners/add")) {
+
+    const body = await readBodyJson(req)
+    if (!body) return bad(res, "Invalid JSON")
+
+    const id = normalizeString(body.id)
+    const name = normalizeString(body.name)
+
+    const logo = normalizeOptionalString(body.logo)
+
+    // New parity fields (optional)
+    let website = normalizeOptionalString(body.website)
+    let socialType = normalizeSocialType(body.socialType)
+    let socialUrl = normalizeOptionalString(body.socialUrl)
+
+    // Legacy support: body.link
+    const legacyLink = normalizeOptionalString(body.link)
+    if (legacyLink && !website && !socialUrl) {
+      const inferred = inferSocialTypeFromUrl(legacyLink)
+      if (inferred) {
+        socialType = inferred
+        socialUrl = legacyLink
+      } else {
+        website = legacyLink
+      }
+    }
+
+    if (!id || !name) {
+      return bad(res, "Missing required fields: id, name")
+    }
+
+    // Require at least one outbound presence link
+    if (!website && !socialUrl) {
+      return bad(res, "Missing required fields: website OR socialUrl")
+    }
+
+    // If someone provides a socialUrl, they must pick ig/fb (or it must be inferrable)
+    if (socialUrl && !socialType) {
+      const inferred = inferSocialTypeFromUrl(socialUrl)
+      if (inferred) socialType = inferred
+      else return bad(res, "Missing required field: socialType (ig or fb) when socialUrl is provided")
+    }
+
+    const nextPartner = {
+      id,
+      name,
+      logo,
+      website,
+      socialType,
+      socialUrl,
+    }
+
+    const existing = await readJsonArray(PARTNERS_PATH)
+    const withoutDup = existing.filter((p) => normalizeString(p.id) !== id)
+    const next = [nextPartner, ...withoutDup]
+
+    await writeJsonArray(PARTNERS_PATH, next)
+    return send(res, 200, { ok: true, data: next })
+  }
+
     // If we got here, nothing matched
   return send(res, 404, { ok: false, error: "Not found" })
   })
