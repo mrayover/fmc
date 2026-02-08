@@ -13,6 +13,12 @@ const BECOME_PARTNER_URL = "https://forms.gle/REPLACE_ME_BECOME_PARTNER"
 
 const CONTACT_EMAIL = "fresnomusiccalendar@gmail.com"
 
+const SOCIAL_ICON_SRC = {
+  ig: "/logos/social/Instagram_Glyph_Gradient.svg",
+  fb: "/logos/social/Facebook_Logo_Primary.png",
+}
+
+
 
 const NAV_ITEMS = [
   { key: "home", label: "Today" },
@@ -165,6 +171,47 @@ function slugifyId(input) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
 }
+
+function inferSocialTypeFromUrl(input) {
+  const raw = String(input || "").trim()
+  if (!raw) return null
+  try {
+    const u = new URL(raw)
+    const host = (u.hostname || "").toLowerCase()
+    if (host.includes("instagram.com") || host.includes("instagr.am")) return "ig"
+    if (
+      host.includes("facebook.com") ||
+      host === "fb.com" ||
+      host.endsWith(".facebook.com") ||
+      host === "m.facebook.com" ||
+      host === "www.facebook.com"
+    )
+      return "fb"
+    return null
+  } catch {
+    return null
+  }
+}
+
+function normalizeFlyerImageSrc(input) {
+  const raw = String(input || "").trim()
+  if (!raw) return null
+
+  // Local flyers written into /public/flyers
+  if (raw.startsWith("/flyers/")) return raw
+  if (raw.startsWith("flyers/")) return `/${raw}`
+
+  // Allow absolute image URLs only (avoid treating arbitrary links as images)
+  if (/^https?:\/\//i.test(raw)) {
+    const isImageLike = /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(raw)
+    return isImageLike ? raw : null
+  }
+
+  return null
+}
+
+
+
 function DateGroup({ date, children }) {
   const key = normalizeDateToYMD(date) || String(date || "")
   return (
@@ -179,6 +226,7 @@ function DateGroup({ date, children }) {
     </section>
   )
 }
+
 
 function TruncateWithTitle({ text, className = "" }) {
   const ref = useRef(null)
@@ -207,12 +255,30 @@ function TruncateWithTitle({ text, className = "" }) {
 
 function EventCard({ event, isOpen, onToggle }) {
   const venue = getVenueById(event.venueId)
-  const href =
-    event.link ||
-    venue?.website ||
-    venue?.socialUrl ||
-    venue?.link || // legacy fallback (safe while transitioning)
+
+  const normalizeOutboundHref = (url) => {
+    const s = String(url || "").trim()
+    if (!s) return null
+    // If user pasted "www.example.com", make it clickable
+    if (/^www\./i.test(s)) return `https://${s}`
+    // Only allow http(s) links
+    if (!/^https?:\/\//i.test(s)) return null
+    return s
+  }
+
+  const eventHref = normalizeOutboundHref(event.link)
+  const venueHref =
+    normalizeOutboundHref(venue?.socialUrl) ||
+    normalizeOutboundHref(venue?.website) ||
+    normalizeOutboundHref(venue?.link) || // legacy fallback (safe while transitioning)
     null
+
+  // Pill should only represent an actual event link (no venue fallback here).
+  const linkHref = eventHref
+  const linkLabel = "Event Link"
+
+
+
 
   const partnerName = (() => {
     const ids = Array.isArray(event.partnerIds) ? event.partnerIds : []
@@ -242,6 +308,19 @@ const partnerUrl = (() => {
     return s.length ? s : null
   })()
 
+  const linkPlatform = inferSocialTypeFromUrl(eventHref)
+  const linkButtonText =
+    linkPlatform === "ig"
+      ? "See on Instagram"
+      : linkPlatform === "fb"
+      ? "See on Facebook"
+      : "See event link"
+
+  const flyerSrc = normalizeFlyerImageSrc(event?.flyer)
+
+
+
+
   return (
     <article
       className={[
@@ -249,6 +328,7 @@ const partnerUrl = (() => {
         "transition-colors duration-200",
         isOpen ? "bg-[#F9E2CD]" : "bg-white",
       ].join(" ")}
+
       onClick={onToggle}
       role="button"
       tabIndex={0}
@@ -382,54 +462,43 @@ const partnerUrl = (() => {
       {/* Expanded content (unified; no mobile/desktop split) */}
 {isOpen ? (
   <div className="mt-3 space-y-3">
-
-    {/* Event Link (optional) */}
-    {href ? (
-      <div className="pt-1">
+    {/* Outbound Link (optional) — THIS is the only “social” affordance now */}
+    {linkHref ? (
+      <div
+        className="pt-1"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <a
-          href={href}
+          href={linkHref}
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center justify-center w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm hover:bg-neutral-50"
           onClick={(e) => e.stopPropagation()}
         >
-          Event Link
+          {linkButtonText}
         </a>
       </div>
     ) : null}
 
-    {/* Flyer (optional) */}
-    {event.flyer ? (
-      <div className="overflow-hidden rounded-lg border border-neutral-200">
-        {href ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={event.flyer}
-              alt={`${event.title} flyer`}
-              className="block w-full max-h-[420px] object-contain bg-neutral-100"
-              loading="lazy"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </a>
-        ) : (
-          <img
-            src={event.flyer}
-            alt={`${event.title} flyer`}
-            className="block w-full max-h-[420px] object-contain bg-neutral-100"
-            loading="lazy"
-            onClick={(e) => e.stopPropagation()}
-          />
-        )}
+    {/* Flyer (optional) — image only */}
+    {flyerSrc ? (
+      <div
+        className="overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <img
+          src={flyerSrc}
+          alt={`${event.title || "Event"} flyer`}
+          className="block w-full max-h-[420px] object-contain bg-neutral-100"
+          loading="lazy"
+          onClick={(e) => e.stopPropagation()}
+        />
       </div>
     ) : null}
   </div>
 ) : null}
-
     </article>
   )
 }
@@ -1110,7 +1179,17 @@ const grouped = useMemo(
       if (!v) return { type: "venue", name: "Venue", logo: null, href: null }
 
       // Preference: social → website → legacy link → none
-      const href = normalizeOutboundHref(v?.socialUrl || v?.website || v?.link || null)
+  const eventHref = normalizeOutboundHref(event.link)
+
+  const venueHref =
+    normalizeOutboundHref(venue?.socialUrl) ||
+    normalizeOutboundHref(venue?.website) ||
+    normalizeOutboundHref(venue?.link) || // legacy fallback (safe while transitioning)
+    null
+
+  const linkHref = eventHref
+  const linkLabel = "Event Link"
+
 
       return {
         type: "venue",
@@ -1329,25 +1408,40 @@ function VenuesView({ onSelectVenue, venueSearchQuery }) {
                         )}
 
                         {/* Slot B: Social pill (fixed width, doesn’t collapse) */}
-                        {socialHref ? (
-                          <a
-                            className="inline-flex w-[3.5rem] justify-center rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-                            href={socialHref}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            aria-label={socialLabel ? `Social: ${socialLabel}` : "Social"}
-                          >
-                            {socialLabel || "Social"}
-                          </a>
-                        ) : (
-                          <span
-                            className="inline-flex w-[3.5rem] justify-center rounded-full border border-transparent px-3 py-1.5 text-sm opacity-0"
-                            aria-hidden="true"
-                          >
-                            IG
-                          </span>
-                        )}
+{socialHref ? (
+  <a
+    className="inline-flex w-[3.5rem] justify-center rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+    href={socialHref}
+    target="_blank"
+    rel="noreferrer"
+    onClick={(e) => e.stopPropagation()}
+    aria-label={
+      v?.socialType === "ig"
+        ? "Instagram"
+        : v?.socialType === "fb"
+        ? "Facebook"
+        : "Social"
+    }
+  >
+    {v?.socialType === "ig" || v?.socialType === "fb" ? (
+      <img
+        src={SOCIAL_ICON_SRC[v.socialType]}
+        alt={v.socialType === "ig" ? "Instagram" : "Facebook"}
+        className="h-4 w-4"
+      />
+    ) : (
+      <span>{socialLabel || "Social"}</span>
+    )}
+  </a>
+) : (
+  <span
+    className="inline-flex w-[3.5rem] justify-center rounded-full border border-transparent px-3 py-1.5 text-sm opacity-0"
+    aria-hidden="true"
+  >
+    IG
+  </span>
+)}
+
                       </div>
                     )
                   })()}
@@ -1461,25 +1555,40 @@ function PartnersView({ onSelectPartner, partnerSearchQuery }) {
                   )}
 
                   {/* Slot B: Social (one only) */}
-                  {socialHref ? (
-                    <a
-                      className="inline-flex w-[3.5rem] justify-center rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
-                      href={socialHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      aria-label={socialLabel ? `Social: ${socialLabel}` : "Social"}
-                    >
-                      {socialLabel || "Social"}
-                    </a>
-                  ) : (
-                    <span
-                      className="inline-flex w-[3.5rem] justify-center rounded-full border border-transparent px-3 py-1.5 text-sm opacity-0"
-                      aria-hidden="true"
-                    >
-                      IG
-                    </span>
-                  )}
+{socialHref ? (
+  <a
+    className="inline-flex w-[3.5rem] justify-center rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
+    href={socialHref}
+    target="_blank"
+    rel="noreferrer"
+    onClick={(e) => e.stopPropagation()}
+    aria-label={
+      inferredSocialType === "ig"
+        ? "Instagram"
+        : inferredSocialType === "fb"
+        ? "Facebook"
+        : "Social"
+    }
+  >
+    {inferredSocialType === "ig" || inferredSocialType === "fb" ? (
+      <img
+        src={SOCIAL_ICON_SRC[inferredSocialType]}
+        alt={inferredSocialType === "ig" ? "Instagram" : "Facebook"}
+        className="h-4 w-4"
+      />
+    ) : (
+      <span>{socialLabel || "Social"}</span>
+    )}
+  </a>
+) : (
+  <span
+    className="inline-flex w-[3.5rem] justify-center rounded-full border border-transparent px-3 py-1.5 text-sm opacity-0"
+    aria-hidden="true"
+  >
+    IG
+  </span>
+)}
+
                 </div>
               </div>
             )
@@ -1511,8 +1620,8 @@ function AboutView() {
 function ContactView() {
   const actions = [
     {
-      title: "Submit a correction to an event",
-      when: "Use this if an event listing has incorrect or outdated information.",
+      title: "Submit a correction",
+      when: "Use this if something listed on the site has incorrect or outdated information.",
       kind: "mailto",
       subject: "Event Correction – Fresno Music Calendar",
       cta: "Email",

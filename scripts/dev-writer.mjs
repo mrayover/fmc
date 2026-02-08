@@ -68,6 +68,57 @@ function normalizeOptionalString(x) {
   return s.length ? s : null
 }
 
+function normalizeFlyer(x) {
+  const raw = normalizeString(x)
+  if (!raw) return null
+
+  // Allow local flyer paths (written into /public/flyers)
+  if (raw.startsWith("/flyers/")) return raw
+  if (raw.startsWith("flyers/")) return `/${raw}`
+
+  // Allow absolute image URLs only (avoid treating arbitrary links as flyer images)
+  if (/^https?:\/\//i.test(raw)) {
+    const isImageLike = /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(raw)
+    return isImageLike ? raw : null
+  }
+
+  return null
+}
+
+function normalizeEventLink(x) {
+  const raw = normalizeString(x)
+  if (!raw) return null
+
+  // Only allow absolute http(s) URLs
+  if (!/^https?:\/\//i.test(raw)) return null
+
+  // Canonicalize Instagram post/reel/tv links for consistency (optional but nice)
+  try {
+    const u = new URL(raw)
+    const host = (u.hostname || "").toLowerCase()
+    if (host.includes("instagram.com") || host.includes("instagr.am")) {
+      const m = u.pathname.match(/^\/(?:[^\/]+\/)?(p|reel|tv)\/([^\/\?#]+)\/?/i)
+      if (m) {
+        const kind = m[1].toLowerCase()
+        const code = m[2]
+        return `https://www.instagram.com/${kind}/${code}/`
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return raw
+}
+
+function inferEventLinkPlatform(url) {
+  const u = normalizeString(url).toLowerCase()
+  if (!u) return null
+  if (u.includes("instagram.com") || u.includes("instagr.am")) return "ig"
+  if (u.includes("facebook.com") || u.includes("fb.com")) return "fb"
+  return null
+}
+
 function normalizeSocialType(x) {
   const s = normalizeString(x).toLowerCase()
   if (s === "ig" || s === "fb") return s
@@ -130,20 +181,23 @@ function sortEvents(events) {
 }
 
 const server = http.createServer(async (req, res) => {
-  if (req.method === "OPTIONS") return send(res, 200, { ok: true })
+  try {
+    if (req.method === "OPTIONS") return send(res, 200, { ok: true })
 
-  // Health check
-  if (req.method === "GET" && req.url === "/api/health") {
-    return send(res, 200, { ok: true })
-  }
+    // Health check
+    if (req.method === "GET" && req.url === "/api/health") {
+      return send(res, 200, { ok: true })
+    }
 
-  // Read current files
-  if (req.method === "GET" && req.url === "/api/events") {
-    const events = await readJsonArray(EVENTS_PATH)
-    const { next, changed } = withEventIds(events)
-    if (changed) await writeJsonArray(EVENTS_PATH, next)
-    return send(res, 200, { ok: true, data: next })
-  }
+    // Read current files
+    if (req.method === "GET" && req.url === "/api/events") {
+      const events = await readJsonArray(EVENTS_PATH)
+      const { next, changed } = withEventIds(events)
+      if (changed) await writeJsonArray(EVENTS_PATH, next)
+      return send(res, 200, { ok: true, data: next })
+    }
+
+    // ...
 
   if (req.method === "GET" && req.url === "/api/venues") {
     const venues = await readJsonArray(VENUES_PATH)
@@ -293,22 +347,35 @@ const server = http.createServer(async (req, res) => {
 
     const partnerIds = normalizePartnerIds(body.partnerIds)
     const genres = normalizeGenres(body.genres)
-const flyer = normalizeOptionalString(body.flyer)
-const link = normalizeOptionalString(body.link)
-const lineup = normalizeOptionalString(body.lineup)
+    const lineup = normalizeOptionalString(body.lineup)
 
-const nextEvent = {
-  id: ensureEventId(body),
-  title,
-  date,
-  time,
-  venueId,
-  partnerIds,
-  genres,
-  lineup,
-  flyer,
-  link,
-}
+    // Flyer: image only (local /flyers/* or absolute image URL)
+    // Link: outbound presence/details (IG/FB/etc). If a social link was pasted into flyer,
+    // migrate it into `link` when `link` is empty.
+    let flyer = normalizeFlyer(body.flyer)
+    let link = normalizeEventLink(body.link)
+
+    const flyerAsLink = normalizeEventLink(body.flyer)
+    const flyerPlatform = inferEventLinkPlatform(flyerAsLink)
+    if (!link && flyerAsLink && flyerPlatform) {
+      link = flyerAsLink
+      flyer = null
+    }
+
+    const nextEvent = {
+      id: ensureEventId(body),
+      title,
+      date,
+      time,
+      venueId,
+      partnerIds,
+      genres,
+      lineup,
+      flyer,
+      link,
+    }
+
+
 
 
     const existing = await readJsonArray(EVENTS_PATH)
@@ -338,9 +405,21 @@ const nextEvent = {
 
     const partnerIds = normalizePartnerIds(body.partnerIds)
     const genres = normalizeGenres(body.genres)
-const flyer = normalizeOptionalString(body.flyer)
-const link = normalizeOptionalString(body.link)
-const lineup = normalizeOptionalString(body.lineup)
+    const lineup = normalizeOptionalString(body.lineup)
+
+    // Flyer: image only (local /flyers/* or absolute image URL)
+    // Link: outbound presence/details (IG/FB/etc). If a social link was pasted into flyer,
+    // migrate it into `link` when `link` is empty.
+    let flyer = normalizeFlyer(body.flyer)
+    let link = normalizeEventLink(body.link)
+
+    const flyerAsLink = normalizeEventLink(body.flyer)
+    const flyerPlatform = inferEventLinkPlatform(flyerAsLink)
+    if (!link && flyerAsLink && flyerPlatform) {
+      link = flyerAsLink
+      flyer = null
+    }
+
 
     const existing = await readJsonArray(EVENTS_PATH)
     const { next: existingWithIds, changed } = withEventIds(existing)
@@ -663,7 +742,10 @@ const updated = {
 
     // If we got here, nothing matched
   return send(res, 404, { ok: false, error: "Not found" })
-  })
+    } catch (err) {
+    return send(res, 500, { ok: false, error: "Server error" })
+  }
+})
 
 server.listen(PORT, () => {
   console.log(`Dev writer running on http://localhost:${PORT}`)
@@ -673,4 +755,5 @@ server.listen(PORT, () => {
   console.log(`- ${PARTNERS_PATH}`)
   console.log("Reads/writes flyers to:")
   console.log(`- ${FLYERS_DIR}`)
+  
 })
