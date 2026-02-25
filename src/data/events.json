@@ -1,19 +1,26 @@
 [
   {
-    "title": "Example Show 3",
-    "date": "2026-01-22",
+    "title": "Genre Testing 1 Genre",
+    "date": "2026-02-23",
     "time": "8:00 PM",
     "venueId": "strummers",
-    "partnerIds": [],
+    "partnerIds": [
+      "Valley Voices"
+    ],
+    "genres": [
+      "Funk",
+      "Jazz"
+    ],
     "flyer": null,
-    "link": null,
-    "id": "evt_mkk6ctjv_5u3lgb"
+    "link": "https://www.instagram.com/p/DUMZbZ7kv81/",
+    "id": "evt_mkk6ctjv_yvx5y2",
+    "lineup": null
   },
   {
     "title": "Testing Genres Multiple selections",
-    "date": "2026-01-26",
+    "date": "2026-02-25",
     "time": "10:00 PM",
-    "venueId": "fulton55",
+    "venueId": "fulton",
     "partnerIds": [
       "Jazz Tuezdayz",
       "Valley Voices"
@@ -25,11 +32,44 @@
     ],
     "flyer": "/flyers/Arcana_VI.png",
     "link": "https://www.visitfresnocounty.org/events/calendar-of-events/",
-    "id": "evt_mkk6ctjv_gsfae7"
+    "id": "evt_mkk6ctjv_gsfae7",
+    "lineup": null
+  },
+  {
+    "id": "evt_ml7dviwo_xisahe",
+    "title": "Another Insta Test",
+    "date": "2026-02-27",
+    "time": "3:00 PM",
+    "venueId": "sanctuary",
+    "partnerIds": [],
+    "genres": [
+      "Rock",
+      "Punk",
+      "Metal"
+    ],
+    "lineup": null,
+    "flyer": null,
+    "link": "https://www.instagram.com/p/DUMZbZ7kv81/"
+  },
+  {
+    "id": "evt_ml7cs920_l6u8uu",
+    "title": "Testing Instagram link as flyer",
+    "date": "2026-02-27",
+    "time": "4:00 PM",
+    "venueId": "Rainbow",
+    "partnerIds": [],
+    "genres": [
+      "Pop",
+      "Country",
+      "Funk"
+    ],
+    "lineup": "feat. Niles Cline, Jon Jorgenson, and Pat Boofay",
+    "flyer": null,
+    "link": null
   },
   {
     "title": "Testing Genres - No Genre",
-    "date": "2026-01-26",
+    "date": "2026-02-27",
     "time": "6:00 PM",
     "venueId": "goldsteins",
     "partnerIds": [
@@ -38,12 +78,43 @@
     "genres": [],
     "flyer": "/flyers/Arcana_VI.png",
     "link": "https://icolorpalette.com/color/dark-sage",
-    "id": "evt_mkk6ctjv_brkvqc"
+    "id": "evt_mkk6ctjv_brkvqc",
+    "lineup": null
+  },
+  {
+    "id": "evt_mkxlq0dr_qjmi19",
+    "title": "Testing the Line Up Feature",
+    "date": "2026-02-27",
+    "time": "8:00 PM",
+    "venueId": "goldsteins",
+    "partnerIds": [
+      "Jazz Tuezdayz"
+    ],
+    "genres": [
+      "Jazz",
+      "Blues",
+      "Electronic"
+    ],
+    "flyer": null,
+    "link": "https://www.instagram.com/p/DT9gbiWjuZx/",
+    "lineup": "feat. Jazz Quest, the MODE quartet, The Kevin Hill Trio"
+  },
+  {
+    "title": "Example Show 3",
+    "date": "2026-02-27",
+    "time": "8:00 PM",
+    "venueId": "strummers",
+    "partnerIds": [],
+    "flyer": null,
+    "link": null,
+    "id": "evt_mkk6ctjv_5u3lgb",
+    "genres": [],
+    "lineup": null
   },
   {
     "id": "evt_mkxm0wef_99voe0",
     "title": "Testing Line Up",
-    "date": "2026-02-01",
+    "date": "2026-02-28",
     "time": "8:00 PM",
     "venueId": "goldsteins",
     "partnerIds": [
@@ -60,60 +131,9 @@
     "lineup": "MODE Quartet, Mellowtones, Pfieffer Four, Manshukani + Janzen, Lunch Money and Honey Lake."
   },
   {
-    "id": "evt_ml7cs920_l6u8uu",
-    "title": "Testing Instagram link as flyer",
-    "date": "2026-02-05",
-    "time": "4:00 PM",
-    "venueId": "Rainbow",
-    "partnerIds": [],
-    "genres": [
-      "Pop",
-      "Country",
-      "Funk"
-    ],
-    "lineup": "feat. Niles Cline, Jon Jorgenson, and Pat Boofay",
-    "flyer": null,
-    "link": null
-  },
-  {
-    "id": "evt_mkxlq0dr_qjmi19",
-    "title": "Testing the Line Up Feature",
-    "date": "2026-02-05",
-    "time": "8:00 PM",
-    "venueId": "goldsteins",
-    "partnerIds": [
-      "Jazz Tuezdayz"
-    ],
-    "genres": [
-      "Jazz",
-      "Blues",
-      "Electronic"
-    ],
-    "flyer": "https://www.instagram.com/p/DT9gbiWjuZx/",
-    "link": null,
-    "lineup": "feat. Jazz Quest, the MODE quartet, The Kevin Hill Trio"
-  },
-  {
-    "title": "Genre Testing 1 Genre",
-    "date": "2026-02-06",
-    "time": "8:00 PM",
-    "venueId": "strummers",
-    "partnerIds": [
-      "Valley Voices"
-    ],
-    "genres": [
-      "Funk",
-      "Jazz"
-    ],
-    "flyer": "https://www.instagram.com/p/DUMZbZ7kv81/",
-    "link": null,
-    "id": "evt_mkk6ctjv_yvx5y2",
-    "lineup": null
-  },
-  {
     "id": "evt_mkxcqh8c_983nxm",
     "title": "A Really Really Long Event Title to Test exactly how far things can go in wrap on mobile and desktop",
-    "date": "2026-02-07",
+    "date": "2026-02-28",
     "time": "9:00 pm",
     "venueId": "Paul Shaghoian",
     "partnerIds": [
@@ -128,21 +148,5 @@
     "flyer": "/flyers/Arcana_VI.png",
     "link": "https://www.facebook.com/gazebogardens1922/posts/pfbid0xjTVqWbv69VqgSnECkhbaG9yJqTGf3JmAVXTg7UwDN77y5WkaEyfUeVcMjifg32cl",
     "lineup": null
-  },
-  {
-    "id": "evt_ml7dviwo_xisahe",
-    "title": "Another Insta Test",
-    "date": "2026-02-09",
-    "time": "3:00 PM",
-    "venueId": "sanctuary",
-    "partnerIds": [],
-    "genres": [
-      "Rock",
-      "Punk",
-      "Metal"
-    ],
-    "lineup": null,
-    "flyer": null,
-    "link": "https://www.instagram.com/p/DUMZbZ7kv81/"
   }
 ]
