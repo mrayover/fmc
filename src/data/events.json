@@ -148,5 +148,20 @@
     "flyer": "/flyers/Arcana_VI.png",
     "link": "https://www.facebook.com/gazebogardens1922/posts/pfbid0xjTVqWbv69VqgSnECkhbaG9yJqTGf3JmAVXTg7UwDN77y5WkaEyfUeVcMjifg32cl",
     "lineup": null
+  },
+  {
+    "id": "evt_mo9epzzv_tw4pc2",
+    "title": "Test Event",
+    "date": "2026-04-23",
+    "time": "8:00 pm",
+    "venueId": "strummers",
+    "partnerIds": [],
+    "genres": [
+      "Alternative",
+      "Funk"
+    ],
+    "lineup": "MODE Quartet, Lunch Money, and Honey Lake",
+    "flyer": null,
+    "link": "https://www.instagram.com/p/DW2CBhxkrw-/"
   }
 ]
