@@ -8,8 +8,8 @@ import partners from "./data/partners.json"
 const SUBMIT_EVENT_URL = "https://forms.gle/Kn7VYjzyJfJF6iaE8"
 
 // TODO: replace these with your real form URLs
-const ADD_VENUE_URL = "https://forms.gle/REPLACE_ME_ADD_VENUE"
-const BECOME_PARTNER_URL = "https://forms.gle/REPLACE_ME_BECOME_PARTNER"
+const ADD_VENUE_URL = "https://forms.gle/yFhNZk3CbhCVKL3a6"
+const BECOME_PARTNER_URL = "https://forms.gle/EbcuYPg8v5pQzQeq6"
 
 const CONTACT_EMAIL = "fresnomusiccalendar@gmail.com"
 
@@ -17,8 +17,6 @@ const SOCIAL_ICON_SRC = {
   ig: "/logos/social/Instagram_Glyph_Gradient.svg",
   fb: "/logos/social/Facebook_Logo_Primary.png",
 }
-
-
 
 const NAV_ITEMS = [
   { key: "home", label: "Today" },
