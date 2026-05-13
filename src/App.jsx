@@ -1177,17 +1177,11 @@ const grouped = useMemo(
       if (!v) return { type: "venue", name: "Venue", logo: null, href: null }
 
       // Preference: social → website → legacy link → none
-  const eventHref = normalizeOutboundHref(event.link)
-
-  const venueHref =
-    normalizeOutboundHref(venue?.socialUrl) ||
-    normalizeOutboundHref(venue?.website) ||
-    normalizeOutboundHref(venue?.link) || // legacy fallback (safe while transitioning)
-    null
-
-  const linkHref = eventHref
-  const linkLabel = "Event Link"
-
+      const href =
+        normalizeOutboundHref(v?.socialUrl) ||
+        normalizeOutboundHref(v?.website) ||
+        normalizeOutboundHref(v?.link) ||
+        null
 
       return {
         type: "venue",
