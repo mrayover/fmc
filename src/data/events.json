@@ -163,5 +163,19 @@
     "lineup": "MODE Quartet, Lunch Money, and Honey Lake",
     "flyer": null,
     "link": "https://www.instagram.com/p/DW2CBhxkrw-/"
+  },
+  {
+    "id": "evt_mp3ggzx0_gom0lc",
+    "title": "Garten",
+    "date": "2026-05-20",
+    "time": "7:00 PM",
+    "venueId": "pine and palm",
+    "partnerIds": [],
+    "genres": [
+      "Rock"
+    ],
+    "lineup": "Check out Garten doing their thing.",
+    "flyer": null,
+    "link": "https://www.instagram.com/p/DYFepxzm6Ye/"
   }
 ]

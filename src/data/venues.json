@@ -1,5 +1,15 @@
 [
   {
+    "id": "pine and palm",
+    "name": "Pine and Palm Brewing",
+    "logo": null,
+    "website": null,
+    "socialType": "ig",
+    "socialUrl": "https://www.instagram.com/pineandpalmbrew/",
+    "address": "352 W. Bedford Ave #102, Fresno, CA 93711",
+    "mapLink": "https://share.google/oQLrzDhW4S1YH86dh"
+  },
+  {
     "id": "warnors",
     "name": "Warnor's Theatre",
     "website": "https://warnorscenter.org/",
